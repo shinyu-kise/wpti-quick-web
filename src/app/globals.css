@@ -18,12 +18,16 @@
 }
 
 html {
+  max-width: 100%;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--ink);
 }
 
 body {
+  max-width: 100%;
   margin: 0;
+  overflow-x: hidden;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -49,11 +53,40 @@ button:disabled {
   opacity: 0.55;
 }
 
+a,
+p,
+li,
+h1,
+h2,
+legend,
+.brand,
+.notice,
+.statement,
+.print-details,
+.info-panel,
+.plain-list {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+table {
+  max-width: 100%;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .app-shell {
+  max-width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .topbar {
+  max-width: 100%;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -67,6 +100,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  width: min(1120px, 100%);
   max-width: 1120px;
   margin: 0 auto;
   padding: 14px 24px 10px;
@@ -84,6 +118,7 @@ button:disabled {
 
 .language-toggle {
   display: flex;
+  max-width: 100%;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -112,6 +147,7 @@ button:disabled {
 .nav {
   display: flex;
   gap: 6px;
+  width: min(1120px, 100%);
   max-width: 1120px;
   margin: 0 auto;
   overflow-x: auto;
@@ -137,6 +173,7 @@ button:disabled {
 
 .main {
   width: min(1120px, 100%);
+  max-width: 100%;
   margin: 0 auto;
   padding: 32px 24px 24px;
 }
@@ -144,6 +181,8 @@ button:disabled {
 .panel,
 .question-card,
 .progress-card {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -199,6 +238,7 @@ h2 {
 
 .notice,
 .statement {
+  width: 100%;
   max-width: 900px;
   border-left: 4px solid var(--accent);
   background: var(--surface-soft);
@@ -268,12 +308,16 @@ h2 {
 .domain-row-top {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px;
+  min-width: 0;
 }
 
 .progress-line span,
-.gauge-label span {
+.gauge-label span,
+.domain-row-top span {
+  min-width: 0;
   color: var(--muted);
   font-weight: 700;
 }
@@ -281,6 +325,7 @@ h2 {
 .progress-track,
 .score-gauge,
 .domain-track {
+  max-width: 100%;
   overflow: hidden;
   border-radius: 999px;
   background: #e4ece9;
@@ -307,7 +352,6 @@ h2 {
 }
 
 .question-card {
-  min-width: 0;
   margin: 0;
   padding: 18px;
 }
@@ -338,6 +382,10 @@ h2 {
   border-radius: 8px;
   background: var(--surface);
   padding: 10px 12px;
+}
+
+.option-row span {
+  min-width: 0;
 }
 
 .option-row:has(input:checked) {
@@ -373,6 +421,8 @@ h2 {
 .result-panel {
   display: grid;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .result-heading {
@@ -380,6 +430,13 @@ h2 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.result-heading > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .result-heading h1 {
@@ -388,7 +445,10 @@ h2 {
 
 .score-lockup {
   display: grid;
-  min-width: 190px;
+  width: min(190px, 100%);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
   justify-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -404,6 +464,7 @@ h2 {
 }
 
 .score-lockup strong {
+  max-width: 100%;
   color: var(--accent-strong);
   font-size: clamp(3.5rem, 12vw, 6.5rem);
   line-height: 0.95;
@@ -413,6 +474,10 @@ h2 {
 .gauge-block {
   display: grid;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .score-gauge {
@@ -435,9 +500,13 @@ h2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .result-block {
+  min-width: 0;
+  max-width: 100%;
   border-top: 3px solid var(--accent);
   background: #fbfdfc;
   padding: 16px 0 0;
@@ -452,16 +521,24 @@ h2 {
 .domain-section {
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .domain-list {
   display: grid;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .domain-row {
   display: grid;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .domain-row-top span {
@@ -479,6 +556,10 @@ h2 {
 .print-details {
   display: grid;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
@@ -491,6 +572,8 @@ h2 {
 .info-panel {
   display: grid;
   gap: 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .info-panel h1 {
@@ -500,12 +583,14 @@ h2 {
 .plain-list {
   display: grid;
   gap: 10px;
+  max-width: 100%;
   margin: 0;
   padding-left: 1.2rem;
 }
 
 .footer {
   width: min(1120px, 100%);
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 24px 32px;
   color: var(--muted);
@@ -548,6 +633,7 @@ h2 {
   }
 
   .score-lockup {
+    width: 100%;
     min-width: 0;
   }
 
