@@ -157,10 +157,11 @@ export default function Home() {
             <div className="question-list">
               {t.questions.map((question, index) => (
                 <fieldset className="question-card" key={question.id}>
-                  <legend>
-                    <span>Q{index + 1}</span>
-                    {question.title}
-                  </legend>
+                  <legend className="sr-only">{`Q${index + 1}. ${question.title}`}</legend>
+                  <div className="question-heading" aria-hidden="true">
+                    <span className="question-number">Q{index + 1}</span>
+                    <span className="question-title">{question.title}</span>
+                  </div>
                   <div className="option-list">
                     {question.options.map((option) => (
                       <label className="option-row" key={option.id}>

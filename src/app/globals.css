@@ -53,6 +53,18 @@ button:disabled {
   opacity: 0.55;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 a,
 p,
 li,
@@ -64,6 +76,8 @@ legend,
 .statement,
 .print-details,
 .info-panel,
+.question-heading,
+.question-title,
 .plain-list {
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -352,19 +366,29 @@ h2 {
 }
 
 .question-card {
+  display: grid;
+  gap: 12px;
   margin: 0;
   padding: 18px;
 }
 
-.question-card legend {
-  display: flex;
+.question-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
   gap: 10px;
-  padding: 0 0 12px;
+  min-width: 0;
   font-weight: 800;
+  line-height: 1.35;
 }
 
-.question-card legend span {
+.question-number {
+  min-width: max-content;
   color: var(--accent-strong);
+}
+
+.question-title {
+  min-width: 0;
 }
 
 .option-list {
