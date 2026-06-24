@@ -62,6 +62,18 @@ export function getScoreBand(total: number): ScoreBand {
   return "high";
 }
 
+export function getDiscussionFocusQuestions(domainScores: DomainScores): QuestionId[] {
+  const relativeScores = QUESTION_ORDER.map((questionId) => ({
+    questionId,
+    relativeScore: domainScores[questionId] / DOMAIN_MAX[questionId]
+  }));
+  const lowestRelativeScore = Math.min(...relativeScores.map(({ relativeScore }) => relativeScore));
+
+  return relativeScores
+    .filter(({ relativeScore }) => relativeScore === lowestRelativeScore)
+    .map(({ questionId }) => questionId);
+}
+
 export function calculateScores(answers: AnswerMap): ScoreResult {
   if (!isCompleteAnswerMap(answers)) {
     const missing = getMissingQuestions(answers).join(", ");

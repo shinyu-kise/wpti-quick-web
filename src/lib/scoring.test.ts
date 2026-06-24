@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { calculateScores, getMissingQuestions, getScoreBand } from "./scoring.ts";
+import { calculateScores, getDiscussionFocusQuestions, getMissingQuestions, getScoreBand } from "./scoring.ts";
 
 test("calculates the minimum possible WPTI-Quick score", () => {
   const result = calculateScores({
@@ -49,4 +49,34 @@ test("reports missing questions before calculation", () => {
 
   assert.deepEqual(getMissingQuestions(answers), ["transport", "sedentary"]);
   assert.throws(() => calculateScores(answers), /Missing answers: transport, sedentary/);
+});
+
+test("identifies all three domains when all relative scores are lowest", () => {
+  const result = calculateScores({
+    leisure: "leisure_0_30",
+    transport: "transport_0_30",
+    sedentary: "sedentary_8_plus"
+  });
+
+  assert.deepEqual(getDiscussionFocusQuestions(result.domainScores), ["leisure", "transport", "sedentary"]);
+});
+
+test("identifies one discussion focus when one relative score is lowest", () => {
+  const result = calculateScores({
+    leisure: "leisure_151_plus",
+    transport: "transport_0_30",
+    sedentary: "sedentary_3_or_less"
+  });
+
+  assert.deepEqual(getDiscussionFocusQuestions(result.domainScores), ["transport"]);
+});
+
+test("identifies tied discussion focus domains", () => {
+  const result = calculateScores({
+    leisure: "leisure_31_90",
+    transport: "transport_31_90",
+    sedentary: "sedentary_4_5"
+  });
+
+  assert.deepEqual(getDiscussionFocusQuestions(result.domainScores), ["leisure", "transport"]);
 });

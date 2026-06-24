@@ -6,6 +6,7 @@ import { copy } from "../lib/i18n.ts";
 import {
   calculateScores,
   DOMAIN_MAX,
+  getDiscussionFocusQuestions,
   getMissingQuestions,
   getOptionPoints,
   QUESTION_ORDER
@@ -26,6 +27,10 @@ function formatDate(isoDate: string, language: Language): string {
     month: "long",
     day: "numeric"
   }).format(new Date(isoDate));
+}
+
+function formatDomainScore(score: number, max: number, language: Language): string {
+  return language === "ja" ? `${score} / ${max}点` : `${score} / ${max}`;
 }
 
 export default function Home() {
@@ -276,6 +281,15 @@ function ResultView({
     );
   }
 
+  const discussionFocusQuestions = getDiscussionFocusQuestions(result.domainScores);
+  const discussionFocusText = discussionFocusQuestions
+    .map((questionId) => t.domainLabels[questionId])
+    .join(language === "ja" ? "、" : ", ");
+  const focusExplanation =
+    discussionFocusQuestions.length === 1
+      ? t.results.focusExplanationSingle
+      : t.results.focusExplanationMultiple;
+
   return (
     <section className="panel result-panel printable-result">
       <div className="result-heading">
@@ -320,16 +334,22 @@ function ResultView({
         </div>
       </div>
 
-      <div className="statement">{t.importantStatement}</div>
-
-      <div className="domain-section">
-        <h2>{t.results.domainBreakdown}</h2>
+      <div className="domain-section score-composition">
+        <h2>{t.results.scoreComposition}</h2>
         <div className="domain-list">
           {QUESTION_ORDER.map((questionId) => (
             <DomainRow key={questionId} questionId={questionId} result={result} language={language} />
           ))}
         </div>
       </div>
+
+      <div className="discussion-focus">
+        <h2>{t.results.discussionFocus}</h2>
+        <p className="focus-items">{discussionFocusText}</p>
+        <p>{focusExplanation}</p>
+      </div>
+
+      <div className="statement">{t.importantStatement}</div>
 
       <div className="print-details">
         <h2>{t.citation.title}</h2>
@@ -368,9 +388,7 @@ function DomainRow({
     <div className="domain-row">
       <div className="domain-row-top">
         <span>{t.domainLabels[questionId]}</span>
-        <strong>
-          {score}/{max}
-        </strong>
+        <strong>{formatDomainScore(score, max, language)}</strong>
       </div>
       <div className="domain-track" aria-hidden="true">
         <div className="domain-fill" style={{ width: `${width}%` }} />

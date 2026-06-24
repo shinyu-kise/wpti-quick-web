@@ -74,8 +74,10 @@ legend,
 .brand,
 .notice,
 .statement,
+.discussion-focus,
 .print-details,
 .info-panel,
+.focus-items,
 .question-heading,
 .question-title,
 .plain-list {
@@ -547,8 +549,6 @@ h2 {
   gap: 12px;
   min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .domain-list {
@@ -563,10 +563,20 @@ h2 {
   gap: 8px;
   min-width: 0;
   max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 14px;
 }
 
 .domain-row-top span {
   font-weight: 750;
+}
+
+.domain-row-top strong {
+  flex: 0 0 auto;
+  color: var(--accent-strong);
+  white-space: nowrap;
 }
 
 .domain-track {
@@ -575,6 +585,33 @@ h2 {
 
 .domain-fill {
   background: var(--accent);
+}
+
+.score-composition .domain-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discussion-focus {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 16px;
+}
+
+.discussion-focus h2,
+.discussion-focus p {
+  margin: 0;
+}
+
+.focus-items {
+  color: var(--accent-strong);
+  font-size: 1.15rem;
+  font-weight: 850;
 }
 
 .print-details {
@@ -659,6 +696,10 @@ h2 {
   .score-lockup {
     width: 100%;
     min-width: 0;
+  }
+
+  .score-composition .domain-list {
+    grid-template-columns: 1fr;
   }
 
   .option-row {

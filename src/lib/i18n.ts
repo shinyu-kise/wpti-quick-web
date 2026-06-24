@@ -39,6 +39,10 @@ type AppCopy = {
     scoreRange: string;
     interpretation: string;
     domainBreakdown: string;
+    scoreComposition: string;
+    discussionFocus: string;
+    focusExplanationSingle: string;
+    focusExplanationMultiple: string;
     visualGauge: string;
     noResult: string;
     date: string;
@@ -110,6 +114,12 @@ export const copy: Record<Language, AppCopy> = {
       scoreRange: "スコア範囲",
       interpretation: "解釈",
       domainBreakdown: "領域別スコア",
+      scoreComposition: "あなたのスコア構成",
+      discussionFocus: "現在、話題にしやすい項目：",
+      focusExplanationSingle:
+        "この項目は、今回の回答の中で相対的にスコアが低い項目です。生活行動を振り返る際の話題として活用できます。",
+      focusExplanationMultiple:
+        "これらの項目は、今回の回答の中で相対的にスコアが低い項目です。生活行動を振り返る際の話題として活用できます。",
       visualGauge: "0から100の視覚ゲージ",
       noResult: "まだ結果はありません。評価を完了してください。",
       date: "日付",
@@ -131,7 +141,7 @@ export const copy: Record<Language, AppCopy> = {
       high: "維持や生活環境変化への備えを話題にしやすい段階"
     },
     importantStatement:
-      "WPTI-Quickのスコアは、良い・悪いを判定するための数値ではありません。現在の生活行動のどこに焦点を当てて話すかを共有するための、対話的なアウトカム指標です。",
+      "WPTI-Quickのスコアは、個人を分類したり将来のリスクを推定したりするための数値ではありません。現在の生活行動のどこに焦点を当てて話すかを共有するための、対話的なアウトカム指標です。",
     privacyStatement:
       "このWeb版は、個人情報を収集せず、回答内容をサーバーに送信しません。",
     about: {
@@ -232,15 +242,21 @@ export const copy: Record<Language, AppCopy> = {
       scoreRange: "Score range",
       interpretation: "Interpretation",
       domainBreakdown: "Domain score breakdown",
+      scoreComposition: "Score composition",
+      discussionFocus: "Current discussion focus:",
+      focusExplanationSingle:
+        "This item had a relatively lower score in your current responses. It may be useful as a starting point for reflecting on daily movement behavior.",
+      focusExplanationMultiple:
+        "These items had relatively lower scores in your current responses. They may be useful as starting points for reflecting on daily movement behavior.",
       visualGauge: "Visual score gauge from 0 to 100",
       noResult: "No result yet. Complete the assessment first.",
       date: "Date",
       printableSummary: "Printable summary"
     },
     domainLabels: {
-      leisure: "Leisure/exercise physical activity",
+      leisure: "Leisure-time / exercise physical activity",
       transport: "Transport-related physical activity",
-      sedentary: "Sedentary behavior"
+      sedentary: "Sedentary or reclining behavior"
     },
     scoreBands: {
       low: "0–34 points",
@@ -253,7 +269,7 @@ export const copy: Record<Language, AppCopy> = {
       high: "A stage where discussion can focus on maintenance and preparation for changes in life context."
     },
     importantStatement:
-      "The WPTI-Quick score is not intended to classify individuals as good or bad. It is a conversation-oriented outcome measure for identifying which aspects of current movement behavior should be discussed next.",
+      "The WPTI-Quick score is not intended to classify individuals or estimate future risk. It is a conversation-oriented outcome measure for identifying which aspects of current movement behavior should be discussed next.",
     privacyStatement:
       "This web version does not collect personal information or transmit responses to a server.",
     about: {
