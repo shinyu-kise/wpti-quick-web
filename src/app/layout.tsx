@@ -4,8 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "WPTI-Quick Web v1.0",
-  description: "A local-only browser implementation of WPTI-Quick."
+  title: "WPTI-Quick Web v1.1",
+  description: "Reflect on leisure activity, active travel, and sitting; choose a next step with WPTI-Quick. Responses and plans stay in the browser."
 };
 
 export default function RootLayout({
