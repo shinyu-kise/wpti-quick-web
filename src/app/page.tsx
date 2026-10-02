@@ -1,17 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { copy } from "../lib/i18n.ts";
 import {
   calculateScores,
   DOMAIN_MAX,
-  getDiscussionFocusQuestions,
   getMissingQuestions,
   getOptionPoints,
   QUESTION_ORDER
 } from "../lib/scoring.ts";
 import type { AnswerMap, Language, OptionId, QuestionId, ScoreResult } from "../lib/types.ts";
+
+import { Evidence, PlanEditor, RecallHelp } from "./practice.tsx";
+import { buildSummary, emptyPlan, PAPER_URL, responseLabel } from "../lib/practice.ts";
+import type { ActionPlan } from "../lib/practice.ts";
+import { workflowCopy } from "../lib/workflow-copy.ts";
 
 type View = "home" | "assessment" | "results" | "about" | "howTo" | "citation" | "policy";
 
@@ -40,7 +44,13 @@ export default function Home() {
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [resultDate, setResultDate] = useState("");
 
+  const [plan, setPlan] = useState<ActionPlan>({ ...emptyPlan });
+  const [demo, setDemo] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
+  useEffect(() => { mainRef.current?.querySelector("h1")?.focus(); }, [view]);
   const t = copy[language];
+  const w = workflowCopy[language];
   const missingQuestions = useMemo(() => getMissingQuestions(answers), [answers]);
   const answeredCount = QUESTION_ORDER.length - missingQuestions.length;
   const completionPercent = Math.round((answeredCount / QUESTION_ORDER.length) * 100);
@@ -53,6 +63,9 @@ export default function Home() {
   }
 
   function selectAnswer(questionId: QuestionId, optionId: OptionId) {
+    setResult(null);
+    setResultDate("");
+    setPlan({ ...emptyPlan });
     setAnswers((currentAnswers) => ({
       ...currentAnswers,
       [questionId]: optionId
@@ -70,10 +83,22 @@ export default function Home() {
   }
 
   function restartAssessment() {
+    setDemo(false);
+    setPlan({ ...emptyPlan });
     setAnswers({});
     setResult(null);
     setResultDate("");
     setView("assessment");
+  }
+
+  function tryExample() {
+    const example: AnswerMap = { leisure: "leisure_151_plus", transport: "transport_151_plus", sedentary: "sedentary_8_plus" };
+    setAnswers(example);
+    setResult(calculateScores(example));
+    setResultDate(new Date().toISOString());
+    setPlan({ ...emptyPlan });
+    setDemo(true);
+    setView("results");
   }
 
   return (
@@ -118,18 +143,22 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="main">
+      <main className="main" ref={mainRef}>
+        {demo && <div className="demo-banner" role="status">{w.example} <button className="secondary-button no-print" type="button" onClick={restartAssessment}>{t.common.restart}</button></div>}
         {view === "home" && (
           <section className="panel home-panel">
             <p className="eyebrow">{t.home.eyebrow}</p>
-            <h1>{t.home.title}</h1>
+            <h1 tabIndex={-1}>{t.home.title}</h1>
             <p className="lead">{t.home.body}</p>
-            <div className="notice">{t.privacyStatement}</div>
+            <ol className="workflow-steps">{w.steps.map((step, index) => <li key={step}><span>0{index + 1}</span>{step}</li>)}</ol>
             <div className="action-row">
               <button className="primary-button" type="button" onClick={startAssessment}>
                 {t.common.start}
               </button>
+              <button className="secondary-button" type="button" onClick={tryExample}>{w.sample}</button>
             </div>
+            <p className="hint">{w.boundary}</p>
+            <Evidence language={language} />
           </section>
         )}
 
@@ -137,7 +166,7 @@ export default function Home() {
           <section className="assessment-layout">
             <div className="section-header">
               <p className="eyebrow">{t.common.appTitle}</p>
-              <h1>{t.assessment.title}</h1>
+              <h1 tabIndex={-1}>{t.assessment.title}</h1>
               <p>{t.assessment.intro}</p>
             </div>
 
@@ -161,12 +190,13 @@ export default function Home() {
 
             <div className="question-list">
               {t.questions.map((question, index) => (
-                <fieldset className="question-card" key={question.id}>
+                <fieldset className="question-card" key={question.id} aria-describedby={`${question.id}-hint`}>
                   <legend className="sr-only">{`Q${index + 1}. ${question.title}`}</legend>
                   <div className="question-heading" aria-hidden="true">
                     <span className="question-number">Q{index + 1}</span>
                     <span className="question-title">{question.title}</span>
                   </div>
+                  <RecallHelp id={question.id} language={language} />
                   <div className="option-list">
                     {question.options.map((option) => (
                       <label className="option-row" key={option.id}>
@@ -210,6 +240,11 @@ export default function Home() {
             printableDate={printableDate}
             result={result}
             restartAssessment={restartAssessment}
+            editAnswers={() => setView("assessment")}
+            answers={answers}
+            demo={demo}
+            plan={plan}
+            setPlan={setPlan}
           />
         )}
 
@@ -217,6 +252,7 @@ export default function Home() {
           <InfoPanel title={t.about.title}>
             <p>{t.about.body}</p>
             <div className="notice">{t.importantStatement}</div>
+            <Evidence language={language} />
           </InfoPanel>
         )}
 
@@ -234,6 +270,7 @@ export default function Home() {
         {view === "citation" && (
           <InfoPanel title={t.citation.title}>
             <p>{t.citation.text}</p>
+            <a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a>
           </InfoPanel>
         )}
 
@@ -250,6 +287,7 @@ export default function Home() {
       </main>
 
       <footer className="footer no-print">
+        <span>{w.version}</span><br />
         <span>{t.privacyStatement}</span>
       </footer>
     </div>
@@ -260,19 +298,38 @@ function ResultView({
   language,
   printableDate,
   result,
-  restartAssessment
+  restartAssessment,
+  editAnswers,
+  answers,
+  plan,
+  setPlan,
+  demo
 }: {
   language: Language;
   printableDate: string;
   result: ScoreResult | null;
   restartAssessment: () => void;
+  editAnswers: () => void;
+  answers: AnswerMap;
+  plan: ActionPlan;
+  setPlan: (plan: ActionPlan) => void;
+  demo: boolean;
 }) {
   const t = copy[language];
+  const w = workflowCopy[language];
+  const [copyStatus, setCopyStatus] = useState("");
+  useEffect(() => { setCopyStatus(""); }, [answers, plan, language]);
+  async function copyResult() {
+    try {
+      await navigator.clipboard.writeText(buildSummary(answers, plan, language, printableDate, demo));
+      setCopyStatus(w.copied);
+    } catch { setCopyStatus(w.copyFailed); }
+  }
 
   if (!result) {
     return (
       <section className="panel">
-        <h1>{t.results.title}</h1>
+        <h1 tabIndex={-1}>{t.results.title}</h1>
         <p>{t.results.noResult}</p>
         <button className="primary-button" type="button" onClick={restartAssessment}>
           {t.common.start}
@@ -281,21 +338,12 @@ function ResultView({
     );
   }
 
-  const discussionFocusQuestions = getDiscussionFocusQuestions(result.domainScores);
-  const discussionFocusText = discussionFocusQuestions
-    .map((questionId) => t.domainLabels[questionId])
-    .join(language === "ja" ? "、" : ", ");
-  const focusExplanation =
-    discussionFocusQuestions.length === 1
-      ? t.results.focusExplanationSingle
-      : t.results.focusExplanationMultiple;
-
   return (
     <section className="panel result-panel printable-result">
       <div className="result-heading">
         <div>
           <p className="eyebrow">{t.results.printableSummary}</p>
-          <h1>{t.results.title}</h1>
+          <h1 tabIndex={-1}>{t.results.title}</h1>
           <p>
             {t.results.date}: <strong>{printableDate}</strong>
           </p>
@@ -322,43 +370,34 @@ function ResultView({
         </div>
       </div>
 
-      <div className="result-grid">
-        <div className="result-block">
-          <h2>{t.results.scoreRange}</h2>
-          <p className="band-label">{t.scoreBands[result.band]}</p>
-        </div>
-
-        <div className="result-block">
-          <h2>{t.results.interpretation}</h2>
-          <p>{t.interpretations[result.band]}</p>
-        </div>
-      </div>
+      <div className="notice">{w.boundary}</div>
+      {answers.sedentary === "sedentary_8_plus" && <div className="sitting-note">{w.sittingNote}</div>}
 
       <div className="domain-section score-composition">
-        <h2>{t.results.scoreComposition}</h2>
+        <p className="eyebrow">02 / {language === "ja" ? "生活行動の内訳" : "BEHAVIOR PROFILE"}</p>
+        <h2>{w.profileTitle}</h2>
+        <p className="hint">{w.profileNote}</p>
         <div className="domain-list">
           {QUESTION_ORDER.map((questionId) => (
-            <DomainRow key={questionId} questionId={questionId} result={result} language={language} />
+            <DomainRow key={questionId} questionId={questionId} result={result} language={language} answers={answers} />
           ))}
         </div>
       </div>
 
-      <div className="discussion-focus">
-        <h2>{t.results.discussionFocus}</h2>
-        <p className="focus-items">{discussionFocusText}</p>
-        <p>{focusExplanation}</p>
-      </div>
-
+      <PlanEditor language={language} plan={plan} setPlan={setPlan} />
       <div className="statement">{t.importantStatement}</div>
+      <Evidence language={language} />
 
       <div className="print-details">
         <h2>{t.citation.title}</h2>
         <p>{t.citation.text}</p>
-        <h2>{t.nav.policy}</h2>
-        <p>{t.privacyStatement}</p>
+        <a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a>
+        <p>{w.version}</p>
       </div>
 
       <div className="result-actions no-print">
+        <button className="secondary-button" type="button" onClick={editAnswers}>{w.edit}</button>
+        <button className="secondary-button" type="button" onClick={copyResult}>{w.copy}</button>
         <button className="secondary-button" type="button" onClick={restartAssessment}>
           {t.common.restart}
         </button>
@@ -366,6 +405,12 @@ function ResultView({
           {t.common.print}
         </button>
       </div>
+      <p role="status" aria-live="polite" className="no-print">{copyStatus}</p>
+      <details className="evidence no-print">
+        <summary>{w.feedback}</summary>
+        <p>{w.feedbackNote}</p>
+        <a href="mailto:kise.ryusei@gmail.com?subject=WPTI-Quick%20feedback">{w.contact}</a>
+      </details>
     </section>
   );
 }
@@ -373,13 +418,16 @@ function ResultView({
 function DomainRow({
   questionId,
   result,
-  language
+  language,
+  answers
 }: {
   questionId: QuestionId;
   result: ScoreResult;
   language: Language;
+  answers: AnswerMap;
 }) {
   const t = copy[language];
+  const w = workflowCopy[language];
   const score = result.domainScores[questionId];
   const max = DOMAIN_MAX[questionId];
   const width = Math.round((score / max) * 100);
@@ -390,9 +438,11 @@ function DomainRow({
         <span>{t.domainLabels[questionId]}</span>
         <strong>{formatDomainScore(score, max, language)}</strong>
       </div>
+      <p className="response-label">{responseLabel(answers, questionId, language)}</p>
       <div className="domain-track" aria-hidden="true">
         <div className="domain-fill" style={{ width: `${width}%` }} />
       </div>
+      <p className="domain-prompt">{score === max ? w.maintenance[questionId] : w.prompts[questionId]}</p>
     </div>
   );
 }
@@ -400,7 +450,7 @@ function DomainRow({
 function InfoPanel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="panel info-panel">
-      <h1>{title}</h1>
+      <h1 tabIndex={-1}>{title}</h1>
       {children}
     </section>
   );

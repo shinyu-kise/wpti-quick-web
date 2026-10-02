@@ -212,7 +212,7 @@ table {
 .home-panel {
   display: grid;
   gap: 18px;
-  min-height: 460px;
+  min-height: 0;
   align-content: center;
 }
 
@@ -234,8 +234,8 @@ p {
 h1 {
   max-width: 860px;
   margin-bottom: 16px;
-  font-size: clamp(2rem, 6vw, 4.25rem);
-  line-height: 1.08;
+  font-size: clamp(1.8rem, 3.6vw, 3rem);
+  line-height: 1.4;
   letter-spacing: 0;
 }
 
@@ -511,7 +511,7 @@ h2 {
 }
 
 .score-gauge-fill {
-  background: linear-gradient(90deg, var(--warm), var(--green), var(--accent));
+  background: var(--accent);
 }
 
 .gauge-scale {
@@ -773,4 +773,75 @@ h2 {
   .print-details {
     break-inside: avoid;
   }
+}
+
+/* Web v1.1: behavior context and optional action planning. */
+a { color: var(--accent-strong); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+h1:focus { outline: none; }
+.workflow-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0 0 8px; gap: 12px; }
+.workflow-steps li { padding: 14px; background: var(--surface-soft); border-radius: 8px; font-weight: 700; }
+.workflow-steps span { display: block; color: var(--accent-strong); font-size: .85rem; margin-bottom: 5px; }
+.hint { color: var(--muted); font-size: .92rem; line-height: 1.75; margin: 0; }
+.evidence { border-top: 1px solid var(--line); padding-top: 16px; }
+summary { cursor: pointer; font-weight: 700; color: var(--accent-strong); padding: 8px 0; }
+.evidence ul { margin: 12px 0 18px; }
+.recall-help { display: grid; gap: 8px; }
+.recall-help details { background: var(--surface-soft); border-radius: 8px; padding: 4px 12px; }
+.recall-fields { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; padding: 12px 0; }
+.recall-fields label { width: min(210px, 100%); font-size: .9rem; }
+.recall-fields output { padding: 10px 0; }
+input[type="number"], input[type="date"], textarea { width: 100%; display: block; margin-top: 6px; border: 1px solid #809a96; border-radius: 6px; background: white; color: var(--ink); padding: 10px; min-height: 44px; font: inherit; }
+textarea { resize: vertical; }
+.demo-banner { background: #fff2d9; color: #61420d; border: 1px solid #dcc390; padding: 14px 18px; border-radius: 8px; margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.sitting-note { padding: 16px; border-left: 4px solid #976426; background: #fff8ec; }
+.response-label { font-weight: 750; font-size: 1.15rem; margin: 0; }
+.domain-prompt { margin: 8px 0 0; font-size: .94rem; }
+.domain-row { align-content: start; }
+.action-plan { background: var(--surface-soft); border: 1px solid var(--line); padding: 24px; border-radius: 8px; display: grid; gap: 12px; }
+.action-plan h2 { font-size: 1.4rem; line-height: 1.5; }
+.action-plan p { margin-bottom: 0; }
+.plan-choices { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.plan-choices legend { margin-bottom: 8px; font-weight: 700; }
+.plan-choices label { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); padding: 12px; background: white; border-radius: 6px; cursor: pointer; }
+.plan-choices input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); }
+.plan-choices .chosen { border-color: var(--accent); background: #e2f1ee; }
+.plan-example { border-left: 3px solid var(--accent); padding: 12px; margin-top: 14px; }
+.plan-example p { margin: 0 0 10px; }
+.plan-fields { display: grid; gap: 14px; margin: 18px 0; }
+.plan-fields label { font-weight: 650; }
+.plan-fields input[type="date"] { max-width: 280px; }
+.print-only { display: none; }
+@media (max-width:760px) {
+  .workflow-steps { grid-template-columns: 1fr; gap: 8px; }
+  .workflow-steps li { display: flex; gap: 12px; padding: 10px 14px; }
+  .workflow-steps span { margin: 0; }
+  .action-plan { padding: 16px; }
+  .plan-choices { grid-template-columns: 1fr; }
+  .result-actions { align-items: stretch; flex-direction: column; }
+  .domain-row-top { gap: 8px; }
+  .topbar { position: static; }
+}
+@media print {
+  @page { margin: 14mm; }
+  body { font-size: 10pt; line-height: 1.45; }
+  h1 { font-size: 20pt; }
+  .print-only { display: block; }
+  .plan-summary { margin: 0; }
+  .plan-summary dt { font-weight: 700; margin-top: 7px; }
+  .plan-summary dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .action-plan, .statement, .sitting-note, .notice { background: white; padding: 10px; }
+  .action-plan { display: block; }
+  .action-plan .notice, .action-plan .hint { margin-top: 8px; }
+  .action-plan h2 { font-size: 13pt; }
+  .result-panel { gap: 12px; }
+  .result-heading { display: flex; }
+  .score-lockup { width: 125px; padding: 8px; }
+  .score-lockup strong { font-size: 36pt; }
+  .gauge-block { display: none; }
+  .score-composition .domain-list { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .domain-row { padding: 8px; }
+  .domain-prompt, .hint { font-size: 9pt; }
+  .print-details { font-size: 8pt; }
+  .domain-section h2, #plan-title { break-after: avoid; }
 }
