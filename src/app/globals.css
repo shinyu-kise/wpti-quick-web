@@ -828,9 +828,10 @@ textarea { resize: vertical; }
   h1 { font-size: 20pt; }
   .print-only { display: block; }
   .plan-summary { margin: 0; }
-  .plan-summary dt { font-weight: 700; margin-top: 7px; }
+  .plan-summary dt { font-weight: 700; margin-top: 7px; break-after: avoid-page; }
   .plan-summary dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
   .action-plan, .statement, .sitting-note, .notice { background: white; padding: 10px; }
+  .statement { break-inside: avoid-page; }
   .action-plan { display: block; }
   .action-plan .notice, .action-plan .hint { margin-top: 8px; }
   .action-plan h2 { font-size: 13pt; }
