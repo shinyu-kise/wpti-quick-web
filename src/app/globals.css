@@ -781,7 +781,7 @@ a { color: var(--accent-strong); text-underline-offset: 3px; }
 h1:focus { outline: none; }
 .workflow-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0 0 8px; gap: 12px; }
 .workflow-steps li { padding: 14px; background: var(--surface-soft); border-radius: 8px; font-weight: 700; }
-.workflow-steps span { display: block; color: var(--accent-strong); font-size: .85rem; margin-bottom: 5px; }
+.workflow-steps span { display: block; flex-shrink: 0; white-space: nowrap; color: var(--accent-strong); font-size: .85rem; margin-bottom: 5px; }
 .hint { color: var(--muted); font-size: .92rem; line-height: 1.75; margin: 0; }
 .evidence { border-top: 1px solid var(--line); padding-top: 16px; }
 summary { cursor: pointer; font-weight: 700; color: var(--accent-strong); padding: 8px 0; }

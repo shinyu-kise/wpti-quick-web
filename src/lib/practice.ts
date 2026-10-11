@@ -2,7 +2,7 @@ import { copy } from "./i18n.ts";
 import { calculateScores, QUESTION_ORDER } from "./scoring.ts";
 import type { AnswerMap, Language, QuestionId } from "./types.ts";
 
-export const WEB_VERSION = "1.1";
+export const WEB_VERSION = "1.2-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
 
@@ -44,7 +44,7 @@ export function buildSummary(answers: AnswerMap, plan: ActionPlan, language: Lan
     `${ja ? "いつ・どこで" : "When / where"}: ${plan.when || "—"}`,
     `${ja ? "振り返る日" : "Review date"}: ${plan.review || "—"}`,
     "",
-    ja ? "Quickは原著WPTIの考え方に基づく別の簡易採点です。原著の判定性能・閾値をQuickに直接適用できません。点数は健康度の割合や診断、WHO基準達成、介入効果を示しません。" : "Quick uses a separate simplified scoring method. The original WPTI's accuracy and thresholds do not directly apply. Scores are not a percentage of health, a diagnosis, WHO guideline attainment, or evidence of intervention benefit.",
+    ja ? "原著WPTIは3領域指標の開発と初期評価の段階にあり、Quickは別の簡易採点です。原著の判定性能・閾値をQuickに直接適用できません。点数は健康度の割合や診断、WHO基準達成、介入効果を示しません。" : "The original WPTI is at the stage of development and initial evaluation of a three-domain index; Quick uses separate simplified scoring. The original WPTI's accuracy and thresholds do not directly apply. Scores are not a percentage of health, a diagnosis, WHO guideline attainment, or evidence of intervention benefit.",
     t.citation.text,
     PAPER_URL
   ].filter(line => line !== "").join("\n");
