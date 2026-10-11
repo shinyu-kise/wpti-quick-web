@@ -23,6 +23,10 @@ export function RecallHelp({ id, language }: { id: QuestionId; language: Languag
   const total = weeklyMinutes(days, minutes);
   return <div className="recall-help">
     <p className="hint" id={`${id}-hint`}>{w.hints[id]}</p>
+    {id === "sedentary" && <details>
+      <summary>{w.intervalTitle}</summary>
+      <p className="hint">{w.intervalNote}</p>
+    </details>}
     {id !== "sedentary" && <details>
       <summary>{w.calcTitle}</summary>
       <div className="recall-fields">

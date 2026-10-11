@@ -22,7 +22,8 @@ type OptionScoreDefinition = {
 };
 
 // Fixed WPTI-Quick v1.0 scoring table. Do not modify wording, options, or points
-// without an explicitly versioned instrument revision. Quick is not the original validated WPTI.
+// without an explicitly versioned instrument revision. Quick is a separate
+// categorical instrument; reproducing the original WPTI does not validate Quick.
 export const OPTION_SCORES: Record<OptionId, OptionScoreDefinition> = {
   leisure_0_30: { questionId: "leisure", points: 0 },
   leisure_31_90: { questionId: "leisure", points: 10 },

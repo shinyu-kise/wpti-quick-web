@@ -20,7 +20,7 @@ test("60-point export retains long sitting, scoring provenance, and limitations 
     const summary = buildSummary(activeButSitting, emptyPlan, language, "2026-10-02", true);
     assert.match(summary, /60\/100/);
     assert.ok(summary.includes(responseLabel(activeButSitting, "sedentary", language)));
-    assert.match(summary, /Quick v1.0 \/ Web v1.1/);
+    assert.match(summary, /Quick v1.0 \/ Web v1.2-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
     assert.match(summary, language === "ja" ? /直接適用できません/ : /do not directly apply/);
