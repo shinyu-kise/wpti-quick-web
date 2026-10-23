@@ -35,7 +35,7 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.0-prototype \/ Web v1.4.0-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.1-prototype \/ Web v1.5.0-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
@@ -57,31 +57,74 @@ test("incomplete answers export with distinct nonresponse states and never an im
   }
 });
 
-test("optional context and participant-selected plan export verbatim without changing scoring", () => {
+test("optional notes and participant-selected plan export without a legacy review step or scoring changes", () => {
   let session: DialogueSession = { ...createSession(), answers: activeButSitting };
   session = dialogueReducer(session, { type: "contextMode", mode: "notes" });
   session = dialogueReducer(session, { type: "contextField", field: "sitting", value: "会議で長く座る\n日によって違う" });
   session = dialogueReducer(session, { type: "contextField", field: "period", value: "最近の生活" });
-  session = dialogueReducer(session, { type: "reviewContext" });
   session = dialogueReducer(session, { type: "planChoice", choice: "maintain" });
   session = dialogueReducer(session, { type: "planDomain", domain: "sedentary" });
   session = dialogueReducer(session, { type: "planField", field: "action", value: "休息の時間を大切にする" });
   session = dialogueReducer(session, { type: "planField", field: "support", value: "無理がある日は休む" });
   session = dialogueReducer(session, { type: "planField", field: "review", value: "2026-11-09" });
-  const summary = buildSummary(session, "ja", "2026-10-23");
-  for (const text of ["会議で長く座る\n日によって違う", "最近の生活", "今できていることを続ける", "休息の時間を大切にする", "無理がある日は休む", "2026-11-09"]) assert.ok(summary.includes(text));
-  assert.match(summary, /60\/100/);
-  assert.doesNotMatch(summary, /架空の回答/);
+  assert.equal(session.contextReviewed, false);
+  for (const language of ["ja", "en"] as const) {
+    const summary = buildSummary(session, language, "2026-10-23");
+    for (const text of ["会議で長く座る\n日によって違う", "最近の生活", "休息の時間を大切にする", "無理がある日は休む", "2026-11-09"]) assert.ok(summary.includes(text));
+    assert.match(summary, language === "ja" ? /今できていることを続ける/ : /Maintain what is working/);
+    assert.match(summary, /60\/100/);
+    assert.doesNotMatch(summary, /架空の回答|fictional responses/);
+  }
   assert.equal(referenceScore(session.answers)?.total, 60);
 });
 
-test("talk-only export excludes context and plan text even if stale state is passed", () => {
-  const session = createSession();
-  session.context.mode = "talk-only";
-  session.context.sitting = "SHOULD_NOT_EXPORT";
-  session.plan.action = "SHOULD_NOT_EXPORT";
-  session.contextReviewed = true;
-  const summary = buildSummary(session, "en", "2026-10-23");
-  assert.doesNotMatch(summary, /SHOULD_NOT_EXPORT/);
-  assert.match(summary, /Talk only \(details not recorded\)/);
+test("changed context exports the retained plan with a review label until explicitly acknowledged in both languages", () => {
+  let session: DialogueSession = { ...createSession(), answers: activeButSitting };
+  session = dialogueReducer(session, { type: "contextMode", mode: "notes" });
+  session = dialogueReducer(session, { type: "contextField", field: "sitting", value: "会議が多い" });
+  session = dialogueReducer(session, { type: "planChoice", choice: "change" });
+  session = dialogueReducer(session, { type: "planField", field: "action", value: "参加者が選んだ小さな一歩" });
+  session = dialogueReducer(session, { type: "contextField", field: "sitting", value: "会議が多い日もある" });
+  assert.equal(session.planNeedsReview, true);
+  for (const language of ["ja", "en"] as const) {
+    const summary = buildSummary(session, language, "2026-10-23");
+    assert.ok(summary.includes("会議が多い日もある"));
+    assert.ok(summary.includes("参加者が選んだ小さな一歩"));
+    assert.match(summary, language === "ja" ? /背景のメモ変更後、次の一歩は再確認待ちです。/ : /The next step is awaiting review after context notes changed\./);
+    assert.match(summary, /60\/100/);
+    const acknowledged = dialogueReducer(session, { type: "acknowledgePlanReview" });
+    const reviewedSummary = buildSummary(acknowledged, language, "2026-10-23");
+    assert.ok(reviewedSummary.includes("参加者が選んだ小さな一歩"));
+    assert.doesNotMatch(reviewedSummary, /再確認待ち|awaiting review/);
+  }
+});
+
+test("the immediate response summary describes unselected notes as unrecorded without implying a talk-only choice", () => {
+  const session = { ...createSession(), answers: activeButSitting };
+  assert.equal(session.context.mode, "");
+  for (const language of ["ja", "en"] as const) {
+    const summary = buildSummary(session, language, "2026-10-23");
+    const unrecorded = language === "ja" ? "背景・計画の記録なし" : "No context or plan details recorded";
+    assert.equal(summary.split("\n").filter(line => line === unrecorded).length, 2);
+    assert.doesNotMatch(summary, /話すだけ|Talk only|再確認待ち|awaiting review/);
+    assert.match(summary, /60\/100/);
+  }
+});
+
+test("unselected and talk-only exports exclude stale context, plan and review state in both languages", () => {
+  for (const mode of ["", "talk-only"] as const) {
+    const session = createSession();
+    session.context.mode = mode;
+    session.context.sitting = "SHOULD_NOT_EXPORT_CONTEXT";
+    session.context.period = "SHOULD_NOT_EXPORT_PERIOD";
+    session.plan.choice = "change";
+    session.plan.action = "SHOULD_NOT_EXPORT_PLAN";
+    session.contextReviewed = true;
+    session.planNeedsReview = true;
+    for (const language of ["ja", "en"] as const) {
+      const summary = buildSummary(session, language, "2026-10-23");
+      assert.doesNotMatch(summary, /SHOULD_NOT_EXPORT|再確認待ち|awaiting review/);
+      assert.match(summary, language === "ja" ? /背景・計画の記録なし/ : /No context or plan details recorded/);
+    }
+  }
 });

@@ -46,3 +46,11 @@ git worktree add --detach ../wpti-quick-web-v1.3.1 052b67bcd9f9a3aa28024b066403c
 ```
 
 See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction changes and their validation limits. Do not attribute those features to the earlier study or submission-date version.
+
+## Web 1.4.0 preserved before the short-flow update
+
+- Previous production commit: `a572708bd873b371c6a6522efdebc249913d85f4`.
+- Preservation branch: `archive/web-v1.4.0-dialogue-rc.1-20261023`.
+- Web 1.5.0 restores a one-page assessment and immediate response summary; see [design notes](design-1.5.0.md). Dialogue is now 1.1-prototype, while Quick scoring remains v1.0.
+- The author requested this update after comparing the earlier and guided workflows. Prior permission to publish after display/print QA and preservation remains applicable. Deployment identity must still be verified.
+- Earlier review and release archives remain unchanged. Source archives and complete Git history are retained separately with hashes.
