@@ -29,6 +29,7 @@ type AppCopy = {
   assessment: {
     title: string;
     intro: string;
+    recallPeriod: string;
     progress: string;
     answered: string;
     incomplete: string;
@@ -80,33 +81,34 @@ export const copy: Record<Language, AppCopy> = {
     languageName: "日本語",
     nav: {
       home: "ホーム",
-      assessment: "評価",
-      results: "結果",
+      assessment: "生活行動",
+      results: "まとめ",
       about: "概要",
       howTo: "使い方",
       citation: "引用",
       policy: "ポリシー"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.2-rc.1",
-      start: "評価を開始",
-      restart: "新しく回答する",
+      appTitle: "WPTI-Quick Web v1.3.0-dialogue-rc.1",
+      start: "生活行動から話し始める",
+      restart: "入力をすべて消す",
       print: "印刷 / PDF保存",
-      calculate: "スコアを表示",
+      calculate: "生活の背景を話す",
       points: "点",
       outOf100: "100点満点"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.2-rc.1",
+      eyebrow: "WPTI-Quick Web v1.3.0-dialogue-rc.1",
       title: "動く・移動する・座る。暮らしを振り返り、次の一歩へ。",
       body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。本人と理学療法士などの専門職が一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
     },
     assessment: {
-      title: "3項目評価",
-      intro: "過去1週間の平均的な状況に最も近い選択肢を選んでください。",
+      title: "3領域の生活行動を確認する",
+      intro: "過去1週間の平均的な状況について、回答できる項目を選んでください。迷う場合や答えにくい場合は保留できます。未回答のままでも、生活の背景を話す画面へ進めます。",
+      recallPeriod: "Quick v1.0の回答の想起期間：過去1週間の平均的な状況",
       progress: "進捗",
       answered: "回答済み",
-      incomplete: "スコア表示には3項目すべてへの回答が必要です。"
+      incomplete: "未回答や保留があっても、対話に進めます。参考点は全項目に回答した場合だけ計算します。"
     },
     results: {
       title: "結果",
@@ -143,19 +145,19 @@ export const copy: Record<Language, AppCopy> = {
     importantStatement:
       "Quickは原著とは別の簡易採点です。点数だけで支援の必要性や介入効果を判断せず、行動の内訳・体調・生活環境と一緒に確認してください。",
     privacyStatement:
-      "回答・行動計画はブラウザ内で処理し、サーバーには送信しません。サイトのアクセス状況はVercel Analyticsで集計します。",
+      "回答・背景・計画はこの画面のメモリ内だけで扱い、自動送信・自動保存しません。氏名など個人を特定できる情報は入力しないでください。",
     about: {
       title: "概要",
-      body: "原著WPTIは、理学療法での行動評価・相談を目指した3領域指標の開発と初期評価の段階にあります。Quickは同じ3領域を別のカテゴリ式採点で扱い、成人の生活行動について対話するための簡易版です。このWeb版はQuick v1.0の質問・選択肢・配点を保ち、回答補助と任意の行動計画を提供します。"
+      body: "原著WPTIは、理学療法での行動評価・相談を目指した3領域指標の開発と初期評価の段階にあります。Quickは同じ3領域を別のカテゴリ式採点で扱い、成人の生活行動について対話するための簡易版です。このWeb版はQuick v1.0の質問・選択肢・配点と既存の想起期間を保ち、生活背景の確認と本人による選択を、別の対話支援として提供します。"
     },
     howTo: {
       title: "使い方",
       bullets: [
         "対象者: 成人",
-        "想起期間: 過去1週間の平均的な状況",
-        "回答方法: 各項目で1つの選択肢を選択",
-        "本人と専門職で回答の内訳を確認し、取り組むことを一つ選びます。",
-        "結果と計画はコピー・印刷・PDF保存できます。再読み込みすると入力内容は消えます。"
+        "3項目の想起期間：過去1週間の平均的な状況。背景欄の時期メモは別の任意記録であり、この想起期間を変えません。",
+        "回答できる項目を選びます。わからない・答えにくい・未回答のままでも対話できます。",
+        "本人と専門職で、3領域の回答と生活の背景を順に確認し、次の一歩を選びます。維持や新しく変えない選択もできます。",
+        "背景・計画は話すだけで記録しない方法も選べます。記録を残す場合は同意を確認し、まとめをコピー・印刷・PDF保存します。再読み込みやリセットで画面の入力は消えます。"
       ]
     },
     citation: {
@@ -169,7 +171,7 @@ export const copy: Record<Language, AppCopy> = {
         "質問文・選択肢・配点はQuick v1.0を保持しています。利用者が独自に改変して同じ版として使用することはできません。",
         "利用時には原著WPTI論文を引用し、使用したQuickの版とWeb版を記載してください。",
         "診断、個人の優劣付け、疾病リスクの推定を目的としません。",
-        "Web v1.2-rc.1の回答補助・行動計画は採点対象外です。"
+        "対話支援1.0-prototypeの保留状態・生活背景・計画はQuick v1.0の採点対象外です。研究利用では必要な同意・倫理承認範囲を別に確認してください。"
       ]
     },
     questions: [
@@ -209,33 +211,34 @@ export const copy: Record<Language, AppCopy> = {
     languageName: "English",
     nav: {
       home: "Home",
-      assessment: "Assessment",
-      results: "Results",
+      assessment: "Daily behavior",
+      results: "Summary",
       about: "About",
       howTo: "How to use",
       citation: "Citation",
       policy: "Policy"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.2-rc.1",
-      start: "Start assessment",
-      restart: "Restart assessment",
+      appTitle: "WPTI-Quick Web v1.3.0-dialogue-rc.1",
+      start: "Start with daily behavior",
+      restart: "Clear all inputs",
       print: "Print / Save as PDF",
-      calculate: "Show score",
+      calculate: "Discuss life circumstances",
       points: "points",
       outOf100: "out of 100"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.2-rc.1",
+      eyebrow: "WPTI-Quick Web v1.3.0-dialogue-rc.1",
       title: "Move, travel, sit. Reflect on daily life. Choose a next step.",
       body: "Explore leisure and transport activity and sedentary time with three questions. Use the results together with a physiotherapist or other professional to reflect on daily life and choose a manageable next step."
     },
     assessment: {
-      title: "3-question assessment",
-      intro: "Select the option that best reflects the average situation during the past 1 week.",
+      title: "Explore three areas of daily behavior",
+      intro: "Consider the average situation during the past 1 week and select responses where you can. If unsure or unable to answer, leave an item unresolved. You can continue to discuss life circumstances with unanswered items.",
+      recallPeriod: "Quick v1.0 response recall period: average situation during the past 1 week",
       progress: "Progress",
       answered: "answered",
-      incomplete: "All 3 items are required before the score can be shown."
+      incomplete: "You can continue the conversation with unanswered or unresolved items. A reference total is calculated only with all instrument responses."
     },
     results: {
       title: "Results",
@@ -272,19 +275,19 @@ export const copy: Record<Language, AppCopy> = {
     importantStatement:
       "Quick uses a simplified scoring method separate from the original WPTI. Review the behavior profile, health, and life circumstances together; the score alone does not determine support needs or intervention benefit.",
     privacyStatement:
-      "Responses and action plans are processed in the browser and are not sent to a server. Site visits are measured with Vercel Analytics.",
+      "Responses, context, and plans stay in this page’s memory without automatic transmission or saving. Do not enter personal identifiers.",
     about: {
       title: "About",
-      body: "The original WPTI is at the stage of development and initial evaluation as a three-domain index for physiotherapy assessment and counselling. Quick is a simplified version with separate categorical scoring across the same domains, intended for conversations about movement behavior in adults. This web version preserves Quick v1.0 questions, options, and points and provides recall aids and an optional action plan."
+      body: "The original WPTI is at the stage of development and initial evaluation as a three-domain index for physiotherapy assessment and counselling. Quick is a simplified version with separate categorical scoring across the same domains, intended for conversations about movement behavior in adults. This web version preserves Quick v1.0 questions, options, and points and provides a separate dialogue process for life circumstances and participant-selected next steps."
     },
     howTo: {
       title: "How to use",
       bullets: [
         "Target users: adults",
-        "Recall period: average situation during the past 1 week",
-        "Response method: select one option for each item",
-        "Review the behavior profile together and choose one manageable action.",
-        "Copy, print, or save the result and plan as PDF. Reloading clears entries."
+        "Recall period for the three items: average situation during the past 1 week. The optional context-period note is separate and does not change this recall period.",
+        "Select responses where possible. Unsure, unable to answer, and unanswered items do not prevent a conversation.",
+        "Review the responses and life circumstances in order, then choose a next step together. Maintaining habits or making no new change are valid choices.",
+        "You can talk without recording context or plan details. If keeping a record is agreed, copy, print, or save the summary as PDF. Reloading or resetting clears page inputs."
       ]
     },
     citation: {
@@ -298,7 +301,7 @@ export const copy: Record<Language, AppCopy> = {
         "Quick v1.0 questions, response options, and points are preserved. Do not label modified questions, response options, or points as Quick v1.0.",
         "Cite the original WPTI article and state both the Quick instrument version and the Web version used.",
         "This tool is not intended for diagnosis, ranking individuals, or estimating disease risk.",
-        "Web v1.2-rc.1 recall aids and action plans are not scored."
+        "Dialogue 1.0-prototype nonresponse states, context, and plans are not scored by Quick v1.0. Check consent and applicable ethics approval separately for research use."
       ]
     },
     questions: [

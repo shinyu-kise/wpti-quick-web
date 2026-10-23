@@ -846,3 +846,74 @@ textarea { resize: vertical; }
   .print-details { font-size: 8pt; }
   .domain-section h2, #plan-title { break-after: avoid; }
 }
+
+/* Dialogue support 1.0-prototype: no score-led gauges or automatic priorities. */
+button, input, textarea { font: inherit; }
+.brand-detail { display: block; color: var(--muted); font-size: .8rem; font-weight: 500; margin-top: 2px; }
+.header-controls { display: flex; align-items: center; gap: 16px; }
+.text-button { min-height: 44px; border: 0; padding: 8px 4px; color: var(--accent-strong); background: transparent; text-decoration: underline; text-underline-offset: 4px; text-align: left; }
+.reset-button { color: var(--muted); font-size: .85rem; }
+.workflow-steps { margin-bottom: 22px; }
+.workflow-steps li { border: 1px solid transparent; }
+.workflow-steps .current-step { border-color: var(--accent); background: #dfeee8; }
+.response-count { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin: 0; font-weight: 700; }
+.response-count span { color: var(--muted); display: block; font-size: .9rem; font-weight: 400; }
+.option-row { grid-template-columns: auto minmax(0, 1fr); cursor: pointer; }
+.nonresponse-options { margin-top: 8px; padding-top: 16px; border-top: 1px dashed var(--line); display: grid; gap: 10px; }
+.nonresponse-options > p { margin: 0; color: var(--muted); font-size: .88rem; }
+.nonresponse-options .option-row { min-height: 48px; background: #f8faf9; }
+.flow-panel, .dialogue-editor { display: grid; gap: 24px; }
+.flow-panel h1 { font-size: clamp(1.6rem, 3.4vw, 2.5rem); }
+.behavior-profile .domain-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.behavior-profile h3 { font-size: .95rem; line-height: 1.7; font-weight: 600; margin: 0 0 8px; color: var(--muted); }
+.behavior-profile .response-label { font-size: 1.12rem; color: var(--accent-strong); }
+.behavior-profile .unresolved { font-size: 1rem; color: var(--muted); }
+.recording-choices { display: grid; gap: 12px; border: 0; padding: 0; margin: 0; }
+.recording-choices legend { font-size: 1.1rem; font-weight: 700; padding: 0 0 12px; }
+.context-fields { display: grid; gap: 20px; }
+.context-field { border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+.context-field label { display: block; font-weight: 700; margin-bottom: 6px; }
+.context-field textarea { margin: 10px 0; }
+.context-period { background: var(--surface-soft); }
+.talk-prompts { padding: 20px; background: var(--surface-soft); border-radius: 8px; }
+.talk-prompts h3 { font-size: 1rem; margin: 20px 0 6px; }
+.talk-prompts p { margin: 0; }
+.talk-status { padding: 12px; border-left: 3px solid var(--accent); font-weight: 700; background: white; }
+.plan-choices { grid-template-columns: 1fr; }
+.topic-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 12px; }
+.summary-section { border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+.summary-section h2 { margin: 4px 0 18px; font-size: 1.2rem; line-height: 1.6; }
+.summary-list { display: grid; gap: 16px; margin: 0 0 18px; }
+.summary-list div { break-inside: avoid; }
+.summary-list dt { color: var(--muted); font-size: .9rem; font-weight: 600; }
+.summary-list dd { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.plan-decision { font-weight: 700; color: var(--accent-strong); }
+.reference-score { border-top: 1px solid var(--line); padding-top: 12px; }
+.reference-total { font-size: 1rem; margin: 12px 0; }
+.reference-total strong { font-size: 1.1rem; }
+.export-controls { display: grid; gap: 16px; border-top: 1px solid var(--line); padding-top: 20px; }
+.export-controls .result-actions { justify-content: flex-start; }
+.footer p { margin-bottom: 8px; }
+@media (max-width: 760px) {
+  .header-controls { justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .header-controls .language-toggle { width: auto; }
+  .brand-detail { display: inline; margin-left: 10px; }
+  .behavior-profile .domain-list, .topic-choices { grid-template-columns: 1fr; }
+  .summary-section, .context-field { padding: 14px; }
+  .result-actions button { width: 100%; }
+}
+@media print {
+  .app-shell, html, body { overflow: visible; }
+  .behavior-profile .domain-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .behavior-profile h3 { font-size: 8pt; line-height: 1.5; }
+  .behavior-profile .response-label { font-size: 11pt; }
+  .summary-section { padding: 10px; border-color: #bbb; }
+  .summary-section h2 { font-size: 12pt; break-after: avoid; }
+  .summary-list { gap: 9px; }
+  .summary-list dt { font-size: 9pt; }
+  .summary-list dd { white-space: pre-wrap; }
+  .reference-score { break-inside: avoid; }
+  .reference-total, .reference-total strong { font-size: 10pt; }
+  .reference-score h2 { font-size: 10pt; }
+  .demo-banner { break-inside: avoid; }
+}
