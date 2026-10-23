@@ -1,4 +1,4 @@
-# WPTI-Quick Web 1.3.0-dialogue-rc.1
+# WPTI-Quick Web 1.3.1-dialogue-rc.1
 
 A **dialogue-support prototype**. The primary flow is original three-domain responses → optional life-context discussion → a participant-chosen next step → a printable/copyable summary. Japanese and English are supported.
 
@@ -26,9 +26,29 @@ Build for production:
 npm run build
 ```
 
-Run the scoring tests:
+The build exports the site to `out/`. Preview that production build locally:
 
 ```bash
+npm start
+```
+
+Open http://127.0.0.1:3000 (or the address printed by the server). Run `npm run build` again after source changes. `npm start` requires an existing build and serves static files; `next start` is incompatible with `output: "export"`.
+
+To use a different port:
+
+```bash
+PORT=4316 npm start
+```
+
+The preview binds to `127.0.0.1` by default; use `HOST=0.0.0.0 npm start` only when access from other machines is intended. Use `PORT` and `HOST` for these overrides instead of appending duplicate CLI flags. Unknown paths return HTTP 404, without falling back to the home page.
+
+The existing public site is hosted on Vercel. This local preview command does not change the Vercel project or deploy anything. Static hosting should serve the contents of `out/` after `npm run build`; it does not need a Next.js application server.
+
+Run the implementation checks:
+
+```bash
+npm run typecheck
+npm run lint
 npm test
 ```
 
