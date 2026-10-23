@@ -24,12 +24,13 @@ export type DialogueSession = {
   nonresponses: NonresponseMap;
   context: LifeContext;
   contextReviewed: boolean;
+  planNeedsReview: boolean;
   plan: ActionPlan;
   demo: boolean;
 };
 
 export function createSession(): DialogueSession {
-  return { answers: {}, nonresponses: {}, context: { ...emptyContext }, contextReviewed: false, plan: { ...emptyPlan }, demo: false };
+  return { answers: {}, nonresponses: {}, context: { ...emptyContext }, contextReviewed: false, planNeedsReview: false, plan: { ...emptyPlan }, demo: false };
 }
 
 export type DialogueAction =
@@ -38,6 +39,7 @@ export type DialogueAction =
   | { type: "contextMode"; mode: ContextMode }
   | { type: "contextField"; field: ContextField; value: string }
   | { type: "reviewContext" }
+  | { type: "acknowledgePlanReview" }
   | { type: "planChoice"; choice: PlanChoice }
   | { type: "planDomain"; domain: ActionPlan["domain"] }
   | { type: "planField"; field: "action" | "when" | "support" | "review"; value: string }
@@ -45,7 +47,7 @@ export type DialogueAction =
   | { type: "example" };
 
 function invalidateFollowingSteps(session: DialogueSession): DialogueSession {
-  return { ...session, context: { ...emptyContext }, contextReviewed: false, plan: { ...emptyPlan } };
+  return { ...session, context: { ...emptyContext }, contextReviewed: false, planNeedsReview: false, plan: { ...emptyPlan } };
 }
 
 // A changed upstream response must not retain an apparently agreed downstream plan.
@@ -75,20 +77,26 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
     case "contextMode":
       if (session.context.mode === action.mode) return session;
       // Switching to talk-only erases every previously entered note.
-      return { ...session, context: { ...emptyContext, mode: action.mode }, contextReviewed: false, plan: { ...emptyPlan } };
+      return { ...session, context: { ...emptyContext, mode: action.mode }, contextReviewed: false, planNeedsReview: false, plan: { ...emptyPlan } };
     case "contextField":
       if (session.context.mode !== "notes" || session.context[action.field] === action.value) return session;
-      return { ...session, context: { ...session.context, [action.field]: action.value }, contextReviewed: false, plan: { ...emptyPlan } };
+      // Editing optional notes must not silently erase a plan. Preserve it and
+      // label it for review without blocking responses, copying, or printing.
+      return { ...session, context: { ...session.context, [action.field]: action.value }, contextReviewed: false, planNeedsReview: session.planNeedsReview || Object.values(session.plan).some(Boolean) };
     case "reviewContext":
+      // Retained for source compatibility with Dialogue 1.0. This flag is not
+      // proof of consent and no longer gates optional notes, plans, or export.
       return session.context.mode ? { ...session, contextReviewed: true } : session;
+    case "acknowledgePlanReview":
+      return session.context.mode === "notes" ? { ...session, planNeedsReview: false } : session;
     case "planChoice":
-      if (!session.contextReviewed || session.context.mode !== "notes" || session.plan.choice === action.choice) return session;
-      return { ...session, plan: { ...emptyPlan, choice: action.choice } };
+      if (session.context.mode !== "notes" || session.plan.choice === action.choice) return session;
+      return { ...session, planNeedsReview: false, plan: { ...emptyPlan, choice: action.choice } };
     case "planDomain":
-      if (!session.contextReviewed || session.context.mode !== "notes" || !["change", "maintain"].includes(session.plan.choice) || session.plan.domain === action.domain) return session;
+      if (session.context.mode !== "notes" || !["change", "maintain"].includes(session.plan.choice) || session.plan.domain === action.domain) return session;
       return { ...session, plan: { ...emptyPlan, choice: session.plan.choice, domain: action.domain } };
     case "planField":
-      if (!session.contextReviewed || session.context.mode !== "notes" || !["change", "maintain"].includes(session.plan.choice)) return session;
+      if (session.context.mode !== "notes" || !["change", "maintain"].includes(session.plan.choice)) return session;
       return { ...session, plan: { ...session.plan, [action.field]: action.value } };
   }
 }

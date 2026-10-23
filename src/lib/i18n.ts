@@ -89,7 +89,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "ポリシー"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.4.0-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.5.0-dialogue-rc.1",
       start: "生活行動から話し始める",
       restart: "入力をすべて消す",
       print: "印刷 / PDF保存",
@@ -98,7 +98,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "100点満点"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.4.0-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.5.0-dialogue-rc.1",
       title: "動く・移動する・座る。暮らしを振り返り、次の一歩へ。",
       body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。本人と理学療法士などの専門職が一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
     },
@@ -171,7 +171,7 @@ export const copy: Record<Language, AppCopy> = {
         "質問文・選択肢・配点はQuick v1.0を保持しています。利用者が独自に改変して同じ版として使用することはできません。",
         "利用時には原著WPTI論文を引用し、使用したQuickの版とWeb版を記載してください。",
         "診断、個人の優劣付け、疾病リスクの推定を目的としません。",
-        "対話支援1.0-prototypeの保留状態・生活背景・計画はQuick v1.0の採点対象外です。研究利用では必要な同意・倫理承認範囲を別に確認してください。"
+        "対話支援1.1-prototypeの保留状態・生活背景・計画はQuick v1.0の採点対象外です。研究利用では必要な同意・倫理承認範囲を別に確認してください。"
       ]
     },
     questions: [
@@ -219,7 +219,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "Policy"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.4.0-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.5.0-dialogue-rc.1",
       start: "Start with daily behavior",
       restart: "Clear all inputs",
       print: "Print / Save as PDF",
@@ -228,7 +228,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "out of 100"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.4.0-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.5.0-dialogue-rc.1",
       title: "Move, travel, sit. Reflect on daily life. Choose a next step.",
       body: "Explore leisure and transport activity and sedentary time with three questions. Use the results together with a physiotherapist or other professional to reflect on daily life and choose a manageable next step."
     },
@@ -301,7 +301,7 @@ export const copy: Record<Language, AppCopy> = {
         "Quick v1.0 questions, response options, and points are preserved. Do not label modified questions, response options, or points as Quick v1.0.",
         "Cite the original WPTI article and state both the Quick instrument version and the Web version used.",
         "This tool is not intended for diagnosis, ranking individuals, or estimating disease risk.",
-        "Dialogue 1.0-prototype nonresponse states, context, and plans are not scored by Quick v1.0. Check consent and applicable ethics approval separately for research use."
+        "Dialogue 1.1-prototype nonresponse states, context, and plans are not scored by Quick v1.0. Check consent and applicable ethics approval separately for research use."
       ]
     },
     questions: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch } from "react";
 import { copy } from "../lib/i18n.ts";
 import { PAPER_URL, responseLabel, weeklyMinutes } from "../lib/practice.ts";
@@ -84,10 +84,30 @@ function RecordingPrivacy({ language }: { language: Language }) {
   </div>;
 }
 
+function PlanReviewNotice({ language, onConfirm }: { language: Language; onConfirm?: () => void }) {
+  const w = workflowCopy[language];
+  return <div className="notice plan-review-notice" role="status">
+    <p>{w.planReviewPending}</p>
+    {onConfirm && <button className="secondary-button" type="button" onClick={onConfirm}>{language === "ja"
+      ? "本人と確認した"
+      : "Reviewed with the participant"}</button>}
+  </div>;
+}
+
 export function ContextEditor({ language, session, dispatch }: DialogueProps) {
+  const editorRef = useRef<HTMLElement>(null);
+  const focusAfterMode = useRef(false);
+  useEffect(() => {
+    if (!focusAfterMode.current) return;
+    focusAfterMode.current = false;
+    editorRef.current?.querySelector<HTMLElement>(session.context.mode === "notes" ? "#context-sitting" : ".enable-notes")?.focus();
+  }, [session.context.mode]);
+  function changeMode(mode: "notes" | "talk-only") {
+    focusAfterMode.current = true;
+    dispatch({ type: "contextMode", mode });
+  }
   const w = workflowCopy[language];
   const otherFields = CONTEXT_FIELDS.filter(field => field !== "sitting");
-  const hasContextNotes = CONTEXT_FIELDS.some(field => Boolean(session.context[field]));
   const hasPlanData = Object.values(session.plan).some(Boolean);
   function contextField(field: (typeof CONTEXT_FIELDS)[number]) {
     return <div className={`context-field context-${field}`} key={field}>
@@ -99,24 +119,9 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
       {field === "period" && <p className="hint">{w.periodNote}</p>}
     </div>;
   }
-  return <section className="dialogue-editor" aria-label={w.contextTitle}>
-    <p className="editor-intro">{language === "ja" ? "話すだけでも大丈夫。本人と進め方を選びます。" : "Talking is enough. Choose how to continue together."}</p>
-    {(hasContextNotes || hasPlanData) && <p className="change-warning">{language === "ja"
-      ? "記録方法を変えると、入力済みの背景メモと計画は消えます。"
-      : "Changing how you record notes clears the existing context notes and plan."}</p>}
-    <fieldset className="recording-choices">
-      <legend>{w.modeTitle}</legend>
-      {(["talk-only", "notes"] as const).map(mode => <label className={`option-row recording-option ${session.context.mode === mode ? "chosen" : ""}`} key={mode}>
-        <input type="radio" name="recording-mode" checked={session.context.mode === mode} onChange={() => dispatch({ type: "contextMode", mode })} />
-        <span><strong>{mode === "talk-only"
-          ? language === "ja" ? "話すだけ" : "Talk only"
-          : language === "ja" ? "メモを残す" : "Make notes"}</strong>
-          <small>{mode === "talk-only"
-            ? language === "ja" ? "背景・計画は入力しません" : "No context or plan details entered"
-            : language === "ja" ? "この画面だけの一時メモ" : "Temporary notes on this page"}</small></span>
-      </label>)}
-    </fieldset>
-    {session.context.mode === "notes" && <>
+  return <section className="dialogue-editor" aria-label={w.contextTitle} ref={editorRef}>
+    <p className="editor-intro">{language === "ja" ? "必要なことだけ、本人と話し合います。" : "Discuss only what is useful to the participant."}</p>
+    {session.context.mode === "notes" ? <>
       <RecordingPrivacy language={language} />
       {hasPlanData && <p className="change-warning">{w.contextReset}</p>}
       <div className="context-fields context-primary">{contextField("sitting")}</div>
@@ -125,32 +130,48 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
         <p className="hint">{w.contextIntro}</p>
         <div className="context-fields">{otherFields.map(contextField)}</div>
       </details>
+      <button className="text-button" type="button" onClick={() => changeMode("talk-only")}>{language === "ja"
+        ? "背景・計画のメモを消して、話すだけに戻す"
+        : "Clear context and plan notes and return to talking only"}</button>
+    </> : <>
+      <div className="talk-prompts">
+        <p className="talk-status">{w.notRecorded}</p>
+        <div className="talk-prompt"><h3>{language === "ja" ? "座っているのは、どんなとき？" : "When do you spend time sitting?"}</h3><p>{w.prompts.sedentary}</p></div>
+        <details className="editor-details secondary-topics">
+          <summary>{language === "ja" ? "ほかに話したいことがあれば" : "Other topics, if useful"}</summary>
+          {otherFields.map(field => <div key={field}><h3>{w.contextLabels[field]}</h3><p>{w.contextHints[field]}</p></div>)}
+          <p className="hint">{w.periodNote}</p>
+        </details>
+      </div>
+      <button className="secondary-button enable-notes" type="button" onClick={() => changeMode("notes")}>{language === "ja"
+        ? "本人と確認してメモを入力する"
+        : "Agree with the participant and enter notes"}</button>
     </>}
-    {session.context.mode === "talk-only" && <div className="talk-prompts">
-      <p className="talk-status">{w.notRecorded}</p>
-      <div className="talk-prompt"><h3>{language === "ja" ? "座っているのは、どんなとき？" : "When do you spend time sitting?"}</h3><p>{w.prompts.sedentary}</p></div>
-      <details className="editor-details secondary-topics">
-        <summary>{language === "ja" ? "ほかに話したいことがあれば" : "Other topics, if useful"}</summary>
-        {otherFields.map(field => <div key={field}><h3>{w.contextLabels[field]}</h3><p>{w.contextHints[field]}</p></div>)}
-        <p className="hint">{w.periodNote}</p>
-      </details>
-    </div>}
   </section>;
 }
 
 export function PlanEditor({ language, session, dispatch }: DialogueProps) {
+  const planRef = useRef<HTMLElement>(null);
+  const focusAfterReview = useRef(false);
+  useEffect(() => {
+    if (!session.planNeedsReview && focusAfterReview.current) {
+      focusAfterReview.current = false;
+      (planRef.current?.querySelector<HTMLElement>('input:checked') ?? planRef.current)?.focus();
+    }
+  }, [session.planNeedsReview]);
   const w = workflowCopy[language];
   const plan = session.plan;
   const hasPlan = ["change", "maintain"].includes(plan.choice);
   const hasPlanDetails = [plan.domain, plan.action, plan.when, plan.support, plan.review].some(Boolean);
   const changeWarning = language === "ja" ? "方針を変えると、記入済みの計画は消えます。" : "Changing the choice clears the plan details already entered.";
-  return <section className="action-plan" aria-label={w.planTitle}>
+  return <section className="action-plan" aria-label={w.planTitle} tabIndex={-1} ref={planRef}>
     <p className="editor-intro">{language === "ja" ? "小さく変える、続ける、今は決めない。本人が選びます。" : "Make a small change, keep going, or decide later. The choice is yours."}</p>
-    {session.context.mode === "talk-only" ? <>
+    {session.planNeedsReview && <PlanReviewNotice language={language} onConfirm={() => { focusAfterReview.current = true; dispatch({ type: "acknowledgePlanReview" }); }} />}
+    {session.context.mode !== "notes" ? <>
       <p className="talk-status">{w.notRecorded}</p>
       <div className="talk-prompt"><h3>{language === "ja" ? "いまの希望に近いものは？" : "What feels right for you now?"}</h3></div>
       <ul className="talk-choice-list">{Object.values(w.planChoices).map(label => <li key={label}>{label}</li>)}</ul>
-      <p className="hint">{language === "ja" ? "画面には記録せず、話し合って次へ進めます。" : "Talk it through and continue without recording the choice here."}</p>
+      <p className="hint">{language === "ja" ? "記録せずに、ここで話し合えます。" : "You can discuss these choices here without recording them."}</p>
     </> : <>
       {hasPlanDetails && <p className="change-warning">{changeWarning}</p>}
       <fieldset className="plan-choices">
@@ -191,23 +212,26 @@ export function ConversationDetails({ language, session }: Pick<DialogueProps, "
   const notes = context.mode === "notes";
   const hasContextNotes = CONTEXT_FIELDS.some(field => context[field].trim());
   const hasPlanDetails = [plan.domain, plan.action, plan.when, plan.support, plan.review].some(value => value.trim());
+  if (!notes) return <section className="summary-section print-only">
+    <h2>{language === "ja" ? "生活背景・次の一歩" : "Daily life and next step"}</h2>
+    <p>{w.notRecorded}</p>
+  </section>;
   return <>
-    <section className="summary-section" aria-labelledby="context-summary-title">
+    <section className={`summary-section${notes && hasContextNotes ? "" : " print-only"}`} aria-labelledby="context-summary-title">
       <p className="eyebrow">02</p><h2 id="context-summary-title">{w.contextTitle}</h2>
       {notes ? <>
-        {!hasContextNotes && <p className="no-print">{w.notEntered}</p>}
         <dl className="summary-list">{CONTEXT_FIELDS.map(field => <div key={field} className={context[field].trim() ? undefined : "print-only"}><dt>{w.contextLabels[field]}</dt><dd>{context[field] || w.notEntered}</dd></div>)}</dl>
       </> : <p>{w.notRecorded}</p>}
       <p className="hint">{w.periodNote}</p>
     </section>
-    <section className="summary-section" aria-labelledby="plan-summary-title">
+    <section className={`summary-section${notes && (plan.choice || hasPlanDetails) ? "" : " print-only"}`} aria-labelledby="plan-summary-title">
       <p className="eyebrow">03</p><h2 id="plan-summary-title">{w.planTitle}</h2>
+      {session.planNeedsReview && <PlanReviewNotice language={language} />}
       {notes ? <>
         <p className="plan-decision">{plan.choice ? w.planChoices[plan.choice] : w.notEntered}</p>
         {["change", "maintain"].includes(plan.choice) && <>
-          {!hasPlanDetails && <p className="no-print">{w.notEntered}</p>}
           <dl className="summary-list">
-            <div className={plan.domain ? undefined : "print-only"}><dt>{w.choose}</dt><dd>{plan.domain ? plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain] : w.notEntered}</dd></div>
+            {plan.domain && <div><dt>{w.choose}</dt><dd>{plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]}</dd></div>}
             {(["action", "when", "support", "review"] as const).map(field => <div key={field} className={plan[field].trim() ? undefined : "print-only"}><dt>{w[field]}</dt><dd>{plan[field] || w.notEntered}</dd></div>)}
           </dl>
         </>}

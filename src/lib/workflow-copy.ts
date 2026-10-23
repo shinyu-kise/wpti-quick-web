@@ -11,7 +11,7 @@ type WorkflowCopy = {
   nextContext: string; contextTitle: string; contextIntro: string; modeTitle: string; notesMode: string; talkOnly: string;
   talkOnlyNote: string; contextLabels: Record<ContextField, string>; contextHints: Record<ContextField, string>;
   periodNote: string; contextRequired: string; nextPlan: string; editContext: string; contextReset: string; answerReset: string;
-  planTitle: string; planIntro: string; planChoices: Record<Exclude<PlanChoice, "">, string>;
+  planReviewPending: string; planTitle: string; planIntro: string; planChoices: Record<Exclude<PlanChoice, "">, string>;
   choose: string; otherDomain: string; noPlan: string; action: string; when: string; support: string; review: string;
   personalized: string; reviewNote: string; privacy: string; consent: string; showSummary: string;
   copy: string; copied: string; copyFailed: string; edit: string; editPlan: string;
@@ -22,7 +22,7 @@ type WorkflowCopy = {
 export const workflowCopy: Record<Language, WorkflowCopy> = {
   ja: {
     steps: ["3領域の生活行動", "生活の背景を話す", "本人と次の一歩を選ぶ"],
-    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.0-prototype ／ Web：1.4.0-dialogue-rc.1",
+    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.1-prototype ／ Web：1.5.0-dialogue-rc.1",
     boundary: "3領域の回答と生活の背景を手がかりに話し合います。Quickの点数は参考値であり、健康度の割合、診断、WHO基準の達成や支援の優先順位を示しません。",
     evidenceTitle: "原著WPTIとQuickの違い・研究上の限界",
     evidence: [
@@ -38,7 +38,7 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
       sedentary: "仕事中、車・電車の中、自宅などで、起きて座る・横になる時間の1日平均です。睡眠は除きます。区分に当てはめにくい場合は、無理に選ばず「わからない・区分で迷う」から対話に進めます。"
     },
     intervalTitle: "座位時間が区分の間にあるとき",
-    intervalNote: "Quick v1.0では、3.5・5.5・7.5時間などの丸め方を定めていません。時間を自動変換したり、近い区分への丸めを求めたりしません。迷う場合は回答を保留し、次の画面で実際の状況を話し合ってください。",
+    intervalNote: "Quick v1.0では、3.5・5.5・7.5時間などの丸め方を定めていません。時間を自動変換したり、近い区分への丸めを求めたりしません。迷う場合は回答を保留し、実際の状況を話し合ってください。",
     calcTitle: "週の合計を計算する（任意）", days: "週に何日？", minutes: "その日の合計（分）", total: "週の合計", calcNote: "同じくらいの時間を行う場合の補助です。回答は自動で選びません。日ごとに違う場合は1週間分を合計してください。この補助の入力値はまとめに含めません。", invalid: "日数は0〜7の整数、時間は0〜1,440分で入力してください。",
     profileTitle: "3領域の回答", profileNote: "選んだ回答をそのまま表示します。わからない・答えにくい・未回答を0点や「活動なし」に置き換えません。",
     prompts: { leisure: "どんな活動を、どんな場面でしていますか。続けやすいことや大切にしたいことはありますか。", transport: "普段の移動手段や、その方法を選ぶ理由は何ですか。", sedentary: "どんな場面で、どのくらい座ったり横になったりしていますか。休息として必要な時間も含めて確認します。" },
@@ -50,7 +50,7 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     contextLabels: { period: "今回話している時期（任意）", sitting: "実際の座位・臥位の場面や時間", demands: "仕事・家事・介護・移動などの事情", healthMobility: "体調・動きやすさ・休息の必要性", environment: "周囲の環境や、難しくしていること", supports: "支えになっていること・使えそうな支援" },
     contextHints: { period: "例：普段の生活、最近の生活の変化など。日付や期間も任意です。", sitting: "いつ、どこで、何をしている時か。区分に入らない実際の時間や、続けて座る状況も話題にできます。", demands: "選びにくい事情や、本人だけでは変えられないことも含めます。", healthMobility: "診断名など詳しい診療情報は不要です。本人が話したい範囲で確認します。", environment: "天候、安全な場所、交通、時間、費用など、本人に関係することを確認します。", supports: "今の習慣を続けられる理由、人や場所などの支援を、個人名なしで確認します。" },
     periodNote: "この時期メモは任意の対話の文脈です。3項目の回答で用いる「過去1週間の平均的な状況」という想起期間は変えません。",
-    contextRequired: "メモするか、話すだけにするかを選ぶと次へ進めます。内容の記入は不要です。", nextPlan: "本人と次の一歩を選ぶ", editContext: "背景を見直す", contextReset: "背景や記録方法を変更すると、以前の計画は消えます。本人と再確認してください。", answerReset: "回答を変更すると、それまでの背景メモと計画は消えます。本人と順に再確認してください。",
+    contextRequired: "メモするか、話すだけにするかを選ぶと次へ進めます。内容の記入は不要です。", nextPlan: "本人と次の一歩を選ぶ", editContext: "背景を見直す", contextReset: "背景のメモを変更しても計画は残ります。次の一歩も本人と確認してください。", answerReset: "回答を変更すると、それまでの背景メモと計画は消えます。本人と順に再確認してください。",
     planTitle: "本人と、次の一歩を選ぶ", planIntro: "取り組む内容を自動で選ぶことはありません。本人が大切にしたいこと、体調、生活の事情を踏まえます。新しく変えないことや、記録しないことも選べます。",
     planChoices: { change: "小さな変更を試す", maintain: "今できていることを続ける", none: "今回は新しい変更を決めない" },
     choose: "本人が選ぶ話題（任意）", otherDomain: "その他・領域をまたぐこと", noPlan: "今回は計画を記録しない・未選択に戻す", action: "本人と選んだこと（任意）", when: "いつ・どこで・無理のない範囲（任意）", support: "支援や、難しいときの別の方法（任意）", review: "振り返る日（任意）",
@@ -60,12 +60,12 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     consent: "本人と専門職で、使い方と記録してよい範囲を確認してください。健康教室等での収集・研究利用は、この画面とは別に、必要な同意や倫理承認の範囲を確認します。",
     showSummary: "対話のまとめを確認", copy: "まとめをコピー", copied: "コピーしました。クリップボードには内容が残るため、共有先を確認してください。", copyFailed: "コピーできませんでした。印刷 / PDF保存をご利用ください。", edit: "回答を見直す", editPlan: "次の一歩を見直す",
     referenceTitle: "参考：Quick v1.0の合計点を確認", referenceNote: "元のカテゴリ採点を変更せず計算した参考値です。原著WPTIと同一ではありません。健康度の％・臨床閾値・1点刻みの測定精度を意味せず、判断帯や優先順位は付けません。",
-    scoreUnavailable: "採点項目への回答がそろっていないため、合計点は計算しません。対話はこのまま進められます。", notRecorded: "対話のみ（内容は未記録）", notEntered: "未記入", summaryTitle: "対話のまとめ", summaryIntro: "本人と、回答・生活の背景・選んだことを確認してください。採点と対話メモは分けて扱います。", exportNote: "コピー・印刷・PDF保存は、この操作をしたときだけ行います。保存先や共有先、本人の同意を確認してください。コピーした内容や保存したファイルは「入力をすべて消す」では消えません。",
+    scoreUnavailable: "採点項目への回答がそろっていないため、合計点は計算しません。対話はこのまま進められます。", planReviewPending: "背景のメモ変更後、次の一歩は再確認待ちです。", notRecorded: "背景・計画の記録なし", notEntered: "未記入", summaryTitle: "対話のまとめ", summaryIntro: "本人と、回答・生活の背景・選んだことを確認してください。採点と対話メモは分けて扱います。", exportNote: "コピー・印刷・PDF保存は、この操作をしたときだけ行います。保存先や共有先、本人の同意を確認してください。コピーした内容や保存したファイルは「入力をすべて消す」では消えません。",
     original: "原著をPubMedで読む"
   },
   en: {
     steps: ["Three areas of daily behavior", "Discuss life circumstances", "Choose a next step together"],
-    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.0-prototype / Web: 1.4.0-dialogue-rc.1",
+    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.1-prototype / Web: 1.5.0-dialogue-rc.1",
     boundary: "Use the responses and life circumstances as conversation prompts. The Quick score is a reference only, not a percentage of health, a diagnosis, WHO guideline attainment, or a priority for support.",
     evidenceTitle: "Original WPTI vs Quick: research limitations",
     evidence: [
@@ -80,7 +80,7 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
       transport: "Examples: walking or cycling to work, study, or shops. Exclude time riding in a car or train. Include both legs of a return trip.",
       sedentary: "Average daily time sitting or reclining while awake, including work, travel, and home. Exclude sleep. If no category fits, choose ‘Unsure / between categories’ and continue the conversation."
     },
-    intervalTitle: "When sitting time falls between categories", intervalNote: "Quick v1.0 does not specify rounding for times such as 3.5, 5.5, or 7.5 hours. This interface does not convert or request rounding to the nearest category. Leave the answer unresolved and discuss the actual situation on the next screen.",
+    intervalTitle: "When sitting time falls between categories", intervalNote: "Quick v1.0 does not specify rounding for times such as 3.5, 5.5, or 7.5 hours. This interface does not convert or request rounding to the nearest category. Leave the answer unresolved and discuss the actual situation alongside the responses.",
     calcTitle: "Calculate weekly minutes (optional)", days: "Days per week", minutes: "Total minutes on that day", total: "Weekly total", calcNote: "A recall aid for similar daily amounts; it does not select an answer. If days differ, add the minutes across the week. These helper inputs are not included in the summary.", invalid: "Enter a whole number of days from 0 to 7 and minutes from 0 to 1,440.",
     profileTitle: "Responses across three areas", profileNote: "These are the original selected responses. Unsure, unable to answer, and unanswered entries are never converted to zero points or no activity.",
     prompts: { leisure: "What activities happen in daily life? What helps, or matters to you?", transport: "How do you usually travel, and what shapes those choices?", sedentary: "When and for how long do you sit or recline? Include the time you need for rest." },
@@ -89,11 +89,11 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     modeTitle: "Choose together whether to record notes", notesMode: "Agree what may be recorded and make temporary notes on this page", talkOnly: "Talk only; do not enter context or plan details", talkOnlyNote: "Context and plan details will not be recorded here. Any previous context or plan notes will be erased. Selected responses to the three questions will remain.",
     contextLabels: { period: "Period being discussed (optional)", sitting: "Actual sitting / reclining situations and time", demands: "Work, household, caring, and travel circumstances", healthMobility: "Health, mobility, and need for rest", environment: "Environment and barriers", supports: "What helps / support that may be available" },
     contextHints: { period: "For example: usual routines or recent changes. Dates and a period are optional.", sitting: "When, where, and during what activities? Discuss actual time between categories and uninterrupted periods if useful.", demands: "Include constraints and circumstances that the participant cannot change alone.", healthMobility: "Detailed diagnoses or clinical information are unnecessary. Discuss only what the participant wishes to share.", environment: "Discuss relevant weather, safety, transport, time, or cost constraints.", supports: "Consider what sustains current habits and useful people or places, without entering names." },
-    periodNote: "This optional note describes the conversation context. It does not change the three-item response recall period: the average situation during the past 1 week.", contextRequired: "Choose temporary notes or talk only to continue. You do not need to fill in any details.", nextPlan: "Choose a next step together", editContext: "Review circumstances", contextReset: "Changing the context or recording method clears the previous plan so it can be agreed again.", answerReset: "Changing a response clears previous context notes and plans. Review them again together in order.",
+    periodNote: "This optional note describes the conversation context. It does not change the three-item response recall period: the average situation during the past 1 week.", contextRequired: "Choose temporary notes or talk only to continue. You do not need to fill in any details.", nextPlan: "Choose a next step together", editContext: "Review circumstances", contextReset: "The plan is kept when context notes change. Review the next step together again.", answerReset: "Changing a response clears previous context notes and plans. Review them again together in order.",
     planTitle: "Choose a next step together", planIntro: "No action is selected automatically. Start with what matters to the participant, health, and life circumstances. Maintaining current habits, making no new change, and leaving notes blank are valid choices.", planChoices: { change: "Try a small change", maintain: "Maintain what is working", none: "Decide on no new change this time" },
     choose: "Participant-selected topic (optional)", otherDomain: "Other / across areas", noPlan: "Do not record a plan / clear the selection", action: "What you chose together (optional)", when: "When / where / a manageable amount (optional)", support: "Support or an alternative if difficult (optional)", review: "Review date (optional)",
     personalized: "Check the plan against health and mobility. This screen does not prescribe an exercise dose or rank support needs.", reviewNote: "Next time, discuss what happened, what was manageable, and what got in the way. Behavior and circumstances can change within the same category or score.",
     privacy: "Do not enter names, contact details, or other personal identifiers. Inputs remain in this page’s memory; they are not automatically sent or saved. Reloading or ‘Clear all inputs’ erases them.", consent: "The participant and professional should agree how to use this tool and what may be recorded. Collection or research use in a health class requires a separate check of consent and any applicable ethics approval.", showSummary: "Review the conversation summary", copy: "Copy summary", copied: "Copied. The clipboard retains the content; check where you share it.", copyFailed: "Copy failed. Please use Print / Save as PDF.", edit: "Review responses", editPlan: "Review next step",
-    referenceTitle: "Reference only: view the Quick v1.0 total", referenceNote: "Calculated with the unchanged categorical scoring. It is not equivalent to the original WPTI. It does not represent a health percentage, a clinical threshold, or measurement precision of one point. No decision bands or priorities are assigned.", scoreUnavailable: "Some instrument responses are missing, so no total is calculated. The conversation can continue without a score.", notRecorded: "Talk only (details not recorded)", notEntered: "Not entered", summaryTitle: "Conversation summary", summaryIntro: "Check the responses, life circumstances, and choices together. Keep scoring separate from conversation notes.", exportNote: "Copying, printing, or saving as PDF happens only when you choose it. Check the destination, sharing, and participant’s consent. ‘Clear all inputs’ does not erase clipboard content or saved files.", original: "Read the original paper on PubMed"
+    referenceTitle: "Reference only: view the Quick v1.0 total", referenceNote: "Calculated with the unchanged categorical scoring. It is not equivalent to the original WPTI. It does not represent a health percentage, a clinical threshold, or measurement precision of one point. No decision bands or priorities are assigned.", scoreUnavailable: "Some instrument responses are missing, so no total is calculated. The conversation can continue without a score.", planReviewPending: "The next step is awaiting review after context notes changed.", notRecorded: "No context or plan details recorded", notEntered: "Not entered", summaryTitle: "Conversation summary", summaryIntro: "Check the responses, life circumstances, and choices together. Keep scoring separate from conversation notes.", exportNote: "Copying, printing, or saving as PDF happens only when you choose it. Check the destination, sharing, and participant’s consent. ‘Clear all inputs’ does not erase clipboard content or saved files.", original: "Read the original paper on PubMed"
   }
 };

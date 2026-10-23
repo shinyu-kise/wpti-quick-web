@@ -7,9 +7,9 @@ import { workflowCopy } from "./workflow-copy.ts";
 
 export { emptyPlan } from "./dialogue.ts";
 export type { ActionPlan } from "./dialogue.ts";
-export const WEB_VERSION = "1.4.0-dialogue-rc.1";
+export const WEB_VERSION = "1.5.0-dialogue-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
-export const DIALOGUE_VERSION = "1.0-prototype";
+export const DIALOGUE_VERSION = "1.1-prototype";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
 
 // Recall support only: no conversion to response categories or score thresholds.
@@ -35,7 +35,7 @@ export function buildSummary(session: DialogueSession, language: Language, date:
   const w = workflowCopy[language];
   const result = referenceScore(session.answers);
   const { context, plan } = session;
-  const notes = context.mode === "notes" && session.contextReviewed;
+  const notes = context.mode === "notes";
   return [
     `WPTI-Quick v${INSTRUMENT_VERSION} / Dialogue v${DIALOGUE_VERSION} / Web v${WEB_VERSION}`,
     session.demo ? w.example : "",
@@ -46,20 +46,21 @@ export function buildSummary(session: DialogueSession, language: Language, date:
     w.profileNote,
     "",
     w.contextTitle,
-    ...(notes ? CONTEXT_FIELDS.map(field => `${w.contextLabels[field]}: ${context[field] || w.notEntered}`) : [context.mode === "talk-only" ? w.notRecorded : w.notEntered]),
+    ...(notes ? CONTEXT_FIELDS.map(field => `${w.contextLabels[field]}: ${context[field] || w.notEntered}`) : [w.notRecorded]),
     w.periodNote,
     "",
     w.planTitle,
     ...(notes ? [
       plan.choice ? w.planChoices[plan.choice] : w.notEntered,
+      session.planNeedsReview ? w.planReviewPending : "",
       ...(["change", "maintain"].includes(plan.choice) ? [
-        `${w.choose}: ${plan.domain ? (plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]) : w.notEntered}`,
+        ...(plan.domain ? [`${w.choose}: ${plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]}`] : []),
         `${w.action}: ${plan.action || w.notEntered}`,
         `${w.when}: ${plan.when || w.notEntered}`,
         `${w.support}: ${plan.support || w.notEntered}`,
         `${w.review}: ${plan.review || w.notEntered}`
       ] : [])
-    ] : [context.mode === "talk-only" ? w.notRecorded : w.notEntered]),
+    ] : [w.notRecorded]),
     "",
     result ? `${language === "ja" ? "参考点（Quick v1.0）" : "Reference total (Quick v1.0)"}: ${result.total}/100` : w.scoreUnavailable,
     w.referenceNote,
