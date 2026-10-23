@@ -30,3 +30,19 @@ The previous version is the public version observed on the submission date. The 
 On 2026-10-23 the author authorized publishing Web 1.3.0-dialogue-rc.1 after completing remaining display/print checks while preserving the old public version. Quick instrument scoring remains v1.0; dialogue support is 1.0-prototype. Technical QA and public availability do not establish scientific validity, clinical thresholds or demonstrated usefulness.
 
 The pull request and deployment status identify the actual published commit. A source commit, approval, or successful local build alone is not a deployment receipt.
+
+## Dialogue releases retained before Web 1.4.0
+
+- Web `1.3.0-dialogue-rc.1`: fixed commit `acd646b253e673301e7ad6ac837e3706d0568de6`; preservation branch `archive/web-v1.3.0-dialogue-rc.1-20261023`.
+- Latest Web `1.3.1-dialogue-rc.1`: fixed commit `052b67bcd9f9a3aa28024b066403c655dd080246`; preservation branch `archive/web-v1.3.1-dialogue-rc.1-20261023`.
+
+Both retain Quick instrument v1.0 and Dialogue 1.0-prototype. These source restoration points are separate from the Web v1.2-rc.1 review archive above; that commit and preservation branch are not overwritten by Web 1.4.0. A preserved source branch identifies reconstructible code, not every historical hosting setting or an independently verified deployment event.
+
+Restore into a separate directory, keeping the current working tree intact:
+
+```sh
+git worktree add --detach ../wpti-quick-web-v1.3.0 acd646b253e673301e7ad6ac837e3706d0568de6
+git worktree add --detach ../wpti-quick-web-v1.3.1 052b67bcd9f9a3aa28024b066403c655dd080246
+```
+
+See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction changes and their validation limits. Do not attribute those features to the earlier study or submission-date version.
