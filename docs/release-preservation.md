@@ -54,3 +54,9 @@ See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction chang
 - Web 1.5.0 restores a one-page assessment and immediate response summary; see [design notes](design-1.5.0.md). Dialogue is now 1.1-prototype, while Quick scoring remains v1.0.
 - The author requested this update after comparing the earlier and guided workflows. Prior permission to publish after display/print QA and preservation remains applicable. Deployment identity must still be verified.
 - Earlier review and release archives remain unchanged. Source archives and complete Git history are retained separately with hashes.
+
+## Web 1.5.0 preserved before input-entry clarification
+
+- Fixed production commit: `1276f8f7517e3110a392d1bcfe92a7331f246131`.
+- Preservation branch: `archive/web-v1.5.0-dialogue-rc.1-20261023`.
+- Web 1.5.1 adds a direct entry to next-step note fields. Quick scoring and Dialogue 1.1-prototype remain unchanged.

@@ -144,8 +144,8 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
         </details>
       </div>
       <button className="secondary-button enable-notes" type="button" onClick={() => changeMode("notes")}>{language === "ja"
-        ? "本人と確認してメモを入力する"
-        : "Agree with the participant and enter notes"}</button>
+        ? "本人と確認して入力欄を開く"
+        : "Agree with the participant and open note fields"}</button>
     </>}
   </section>;
 }
@@ -153,6 +153,13 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
 export function PlanEditor({ language, session, dispatch }: DialogueProps) {
   const planRef = useRef<HTMLElement>(null);
   const focusAfterReview = useRef(false);
+  const focusAfterNotes = useRef(false);
+  useEffect(() => {
+    if (session.context.mode === "notes" && focusAfterNotes.current) {
+      focusAfterNotes.current = false;
+      planRef.current?.querySelector<HTMLElement>('input[name="plan-choice"]')?.focus();
+    }
+  }, [session.context.mode]);
   useEffect(() => {
     if (!session.planNeedsReview && focusAfterReview.current) {
       focusAfterReview.current = false;
@@ -171,9 +178,14 @@ export function PlanEditor({ language, session, dispatch }: DialogueProps) {
       <p className="talk-status">{w.notRecorded}</p>
       <div className="talk-prompt"><h3>{language === "ja" ? "いまの希望に近いものは？" : "What feels right for you now?"}</h3></div>
       <ul className="talk-choice-list">{Object.values(w.planChoices).map(label => <li key={label}>{label}</li>)}</ul>
-      <p className="hint">{language === "ja" ? "記録せずに、ここで話し合えます。" : "You can discuss these choices here without recording them."}</p>
+      <p className="hint">{language === "ja" ? "上の項目は会話のヒントです。記入する場合は、下のボタンで入力欄を開きます。" : "The items above are conversation prompts. To record a choice, open the fields below."}</p>
+      <button className="secondary-button enable-plan-notes" type="button" onClick={() => {
+        focusAfterNotes.current = true;
+        dispatch({ type: "contextMode", mode: "notes" });
+      }}>{language === "ja" ? "本人と確認して、次の一歩を入力する" : "Agree with the participant and enter a next step"}</button>
     </> : <>
       {hasPlanDetails && <p className="change-warning">{changeWarning}</p>}
+      <p className="hint">{language === "ja" ? "「小さな変更を試す」「今できていることを続ける」を選ぶと、メモを記入できます。" : "Choose ‘Try a small change’ or ‘Maintain what is working’ to enter a note."}</p>
       <fieldset className="plan-choices">
         <legend>{language === "ja" ? "本人と選んだ方針（任意）" : "Choice agreed together (optional)"}</legend>
         {(Object.keys(w.planChoices) as Exclude<PlanChoice, "">[]).map(choice => <label key={choice} className={plan.choice === choice ? "chosen" : ""}>

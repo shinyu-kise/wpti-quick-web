@@ -22,7 +22,7 @@ type WorkflowCopy = {
 export const workflowCopy: Record<Language, WorkflowCopy> = {
   ja: {
     steps: ["3領域の生活行動", "生活の背景を話す", "本人と次の一歩を選ぶ"],
-    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.1-prototype ／ Web：1.5.0-dialogue-rc.1",
+    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.1-prototype ／ Web：1.5.1-dialogue-rc.1",
     boundary: "3領域の回答と生活の背景を手がかりに話し合います。Quickの点数は参考値であり、健康度の割合、診断、WHO基準の達成や支援の優先順位を示しません。",
     evidenceTitle: "原著WPTIとQuickの違い・研究上の限界",
     evidence: [
@@ -65,7 +65,7 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
   },
   en: {
     steps: ["Three areas of daily behavior", "Discuss life circumstances", "Choose a next step together"],
-    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.1-prototype / Web: 1.5.0-dialogue-rc.1",
+    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.1-prototype / Web: 1.5.1-dialogue-rc.1",
     boundary: "Use the responses and life circumstances as conversation prompts. The Quick score is a reference only, not a percentage of health, a diagnosis, WHO guideline attainment, or a priority for support.",
     evidenceTitle: "Original WPTI vs Quick: research limitations",
     evidence: [
