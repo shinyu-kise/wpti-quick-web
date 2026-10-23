@@ -1,7 +1,7 @@
 # Dialogue vNext: specification and release boundaries
 
 Status: author-authorized release candidate, 2026-10-23 (Asia/Tokyo). Publication follows the remaining display/print checks; deployment success is recorded separately.
-Web: 1.5.0-dialogue-rc.1. Legacy scoring: Quick instrument 1.0.
+Web: 1.5.1-dialogue-rc.1. Legacy scoring: Quick instrument 1.0.
 Dialogue: 1.1-prototype. Changing a user interface is not validation of an instrument.
 
 ## Intended workflow

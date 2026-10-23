@@ -24,5 +24,5 @@ test("the candidate is a static export without the previous analytics dependency
   assert.match(config, /output:\s*["']export["']/);
   const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
   assert.equal(pkg.dependencies["@vercel/analytics"], undefined);
-  assert.equal(pkg.version, "1.5.0-dialogue-rc.1");
+  assert.equal(pkg.version, "1.5.1-dialogue-rc.1");
 });
