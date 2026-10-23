@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
-    "start": "NEXT_TELEMETRY_DISABLED=1 next start",
+    "prestart": "node -e \"if (!require('node:fs').existsSync('out/index.html')) { console.error('No static build found. Run npm run build before npm start.'); process.exit(1); }\"",
+    "start": "sirv out --host 127.0.0.1 --port 3000",
     "lint": "oxlint src next.config.ts",
     "test": "node --test src/lib/*.test.ts",
     "typecheck": "tsc --noEmit"
@@ -15,7 +16,8 @@
   "dependencies": {
     "next": "16.2.9",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "sirv-cli": "3.0.1"
   },
   "devDependencies": {
     "@types/node": "24.0.3",
