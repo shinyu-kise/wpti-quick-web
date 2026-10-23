@@ -1,18 +1,16 @@
 import { copy } from "./i18n.ts";
-import { calculateScores, QUESTION_ORDER } from "./scoring.ts";
+import { CONTEXT_FIELDS, referenceScore } from "./dialogue.ts";
+import type { DialogueSession, NonresponseMap } from "./dialogue.ts";
+import { QUESTION_ORDER } from "./scoring.ts";
 import type { AnswerMap, Language, QuestionId } from "./types.ts";
+import { workflowCopy } from "./workflow-copy.ts";
 
-export const WEB_VERSION = "1.2-rc.1";
+export { emptyPlan } from "./dialogue.ts";
+export type { ActionPlan } from "./dialogue.ts";
+export const WEB_VERSION = "1.3.0-dialogue-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
+export const DIALOGUE_VERSION = "1.0-prototype";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
-
-export type ActionPlan = {
-  domain: QuestionId | "";
-  action: string;
-  when: string;
-  review: string;
-};
-export const emptyPlan: ActionPlan = { domain: "", action: "", when: "", review: "" };
 
 // Recall support only: no conversion to response categories or score thresholds.
 export function weeklyMinutes(days: string, minutes: string): number | null {
@@ -20,32 +18,55 @@ export function weeklyMinutes(days: string, minutes: string): number | null {
   const d = Number(days);
   const m = Number(minutes);
   if (!Number.isInteger(d) || d < 0 || d > 7 || !Number.isFinite(m) || m < 0 || m > 1440) return null;
-  return Math.round(d * m * 10) / 10;
+  // Keep decimal input as entered: rounding here could silently move a value
+  // into a Quick category across an unresolved boundary (e.g. 30.04 -> 30).
+  return d * m;
 }
 
-export function responseLabel(answers: AnswerMap, id: QuestionId, language: Language): string {
-  return copy[language].questions.find(q => q.id === id)?.options.find(o => o.id === answers[id])?.label ?? "—";
+export function responseLabel(answers: AnswerMap, id: QuestionId, language: Language, nonresponses: NonresponseMap = {}): string {
+  const option = copy[language].questions.find(q => q.id === id)?.options.find(o => o.id === answers[id]);
+  if (option) return option.label;
+  const status = nonresponses[id];
+  return status ? workflowCopy[language].nonresponses[status] : workflowCopy[language].unanswered;
 }
 
-export function buildSummary(answers: AnswerMap, plan: ActionPlan, language: Language, date: string, demo: boolean): string {
+export function buildSummary(session: DialogueSession, language: Language, date: string): string {
   const t = copy[language];
-  const result = calculateScores(answers);
-  const ja = language === "ja";
+  const w = workflowCopy[language];
+  const result = referenceScore(session.answers);
+  const { context, plan } = session;
+  const notes = context.mode === "notes" && session.contextReviewed;
   return [
-    `WPTI-Quick v${INSTRUMENT_VERSION} / Web v${WEB_VERSION}`,
-    demo ? (ja ? "入力例（架空の回答・本人の結果ではありません）" : "Example only — fictional responses") : "",
+    `WPTI-Quick v${INSTRUMENT_VERSION} / Dialogue v${DIALOGUE_VERSION} / Web v${WEB_VERSION}`,
+    session.demo ? w.example : "",
     `${t.results.date}: ${date}`,
-    `${t.results.totalScore}: ${result.total}/100`,
-    ...QUESTION_ORDER.map(id => `${t.domainLabels[id]}: ${responseLabel(answers, id, language)} (${result.domainScores[id]} ${t.common.points})`),
+    w.profileTitle,
+    t.assessment.recallPeriod,
+    ...QUESTION_ORDER.map(id => `${t.domainLabels[id]}: ${responseLabel(session.answers, id, language, session.nonresponses)}`),
+    w.profileNote,
     "",
-    ja ? "本人が選んだ取り組み（任意・採点対象外）" : "Self-selected plan (optional; not scored)",
-    plan.domain ? t.domainLabels[plan.domain] : (ja ? "未選択" : "Not selected"),
-    `${ja ? "取り組むこと" : "Action"}: ${plan.action || "—"}`,
-    `${ja ? "いつ・どこで" : "When / where"}: ${plan.when || "—"}`,
-    `${ja ? "振り返る日" : "Review date"}: ${plan.review || "—"}`,
+    w.contextTitle,
+    ...(notes ? CONTEXT_FIELDS.map(field => `${w.contextLabels[field]}: ${context[field] || w.notEntered}`) : [context.mode === "talk-only" ? w.notRecorded : w.notEntered]),
+    w.periodNote,
     "",
-    ja ? "原著WPTIは3領域指標の開発と初期評価の段階にあり、Quickは別の簡易採点です。原著の判定性能・閾値をQuickに直接適用できません。点数は健康度の割合や診断、WHO基準達成、介入効果を示しません。" : "The original WPTI is at the stage of development and initial evaluation of a three-domain index; Quick uses separate simplified scoring. The original WPTI's accuracy and thresholds do not directly apply. Scores are not a percentage of health, a diagnosis, WHO guideline attainment, or evidence of intervention benefit.",
+    w.planTitle,
+    ...(notes ? [
+      plan.choice ? w.planChoices[plan.choice] : w.notEntered,
+      ...(["change", "maintain"].includes(plan.choice) ? [
+        `${w.choose}: ${plan.domain ? (plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]) : w.notEntered}`,
+        `${w.action}: ${plan.action || w.notEntered}`,
+        `${w.when}: ${plan.when || w.notEntered}`,
+        `${w.support}: ${plan.support || w.notEntered}`,
+        `${w.review}: ${plan.review || w.notEntered}`
+      ] : [])
+    ] : [context.mode === "talk-only" ? w.notRecorded : w.notEntered]),
+    "",
+    result ? `${language === "ja" ? "参考点（Quick v1.0）" : "Reference total (Quick v1.0)"}: ${result.total}/100` : w.scoreUnavailable,
+    w.referenceNote,
+    w.boundary,
+    w.reviewNote,
+    "",
     t.citation.text,
     PAPER_URL
-  ].filter(line => line !== "").join("\n");
+  ].join("\n");
 }

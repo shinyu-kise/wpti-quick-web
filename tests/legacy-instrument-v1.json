@@ -1,0 +1,145 @@
+{
+  "instrument": "WPTI-Quick v1.0",
+  "sourceCommit": "d470d06d836e529db96fd4d77ce4aaa0a02e6fce",
+  "sourcePath": "src/lib/i18n.ts",
+  "sourceSha256": "5929a5bc4d21693d93f915f4226bf5eb7f5d1d56aefe9666d6331634215f9db7",
+  "scope": "Public question identifiers, exact titles, option identifiers, and exact labels. No responses or personal data.",
+  "questions": {
+    "ja": [
+      {
+        "id": "leisure",
+        "title": "余暇・運動での身体活動（息が少し弾む程度以上の運動）",
+        "options": [
+          {
+            "id": "leisure_0_30",
+            "label": "0–30 分／週"
+          },
+          {
+            "id": "leisure_31_90",
+            "label": "31–90 分／週"
+          },
+          {
+            "id": "leisure_91_150",
+            "label": "91–150 分／週"
+          },
+          {
+            "id": "leisure_151_plus",
+            "label": "151 分以上／週"
+          }
+        ]
+      },
+      {
+        "id": "transport",
+        "title": "移動に伴う身体活動（歩行・自転車による移動）",
+        "options": [
+          {
+            "id": "transport_0_30",
+            "label": "0–30 分／週"
+          },
+          {
+            "id": "transport_31_90",
+            "label": "31–90 分／週"
+          },
+          {
+            "id": "transport_91_150",
+            "label": "91–150 分／週"
+          },
+          {
+            "id": "transport_151_plus",
+            "label": "151 分以上／週"
+          }
+        ]
+      },
+      {
+        "id": "sedentary",
+        "title": "覚醒時の座位・臥位時間（睡眠を除く）",
+        "options": [
+          {
+            "id": "sedentary_8_plus",
+            "label": "8 時間以上／日"
+          },
+          {
+            "id": "sedentary_6_7",
+            "label": "6–7 時間／日"
+          },
+          {
+            "id": "sedentary_4_5",
+            "label": "4–5 時間／日"
+          },
+          {
+            "id": "sedentary_3_or_less",
+            "label": "3 時間以下／日"
+          }
+        ]
+      }
+    ],
+    "en": [
+      {
+        "id": "leisure",
+        "title": "Leisure/exercise physical activity involving at least light breathlessness",
+        "options": [
+          {
+            "id": "leisure_0_30",
+            "label": "0–30 min/week"
+          },
+          {
+            "id": "leisure_31_90",
+            "label": "31–90 min/week"
+          },
+          {
+            "id": "leisure_91_150",
+            "label": "91–150 min/week"
+          },
+          {
+            "id": "leisure_151_plus",
+            "label": "≥151 min/week"
+          }
+        ]
+      },
+      {
+        "id": "transport",
+        "title": "Transport-related physical activity such as walking or cycling",
+        "options": [
+          {
+            "id": "transport_0_30",
+            "label": "0–30 min/week"
+          },
+          {
+            "id": "transport_31_90",
+            "label": "31–90 min/week"
+          },
+          {
+            "id": "transport_91_150",
+            "label": "91–150 min/week"
+          },
+          {
+            "id": "transport_151_plus",
+            "label": "≥151 min/week"
+          }
+        ]
+      },
+      {
+        "id": "sedentary",
+        "title": "Sedentary or reclining time while awake, excluding sleep",
+        "options": [
+          {
+            "id": "sedentary_8_plus",
+            "label": "≥8 hours/day"
+          },
+          {
+            "id": "sedentary_6_7",
+            "label": "6–7 hours/day"
+          },
+          {
+            "id": "sedentary_4_5",
+            "label": "4–5 hours/day"
+          },
+          {
+            "id": "sedentary_3_or_less",
+            "label": "≤3 hours/day"
+          }
+        ]
+      }
+    ]
+  }
+}

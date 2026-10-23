@@ -1,3 +1,5 @@
+> Historical Web v1.2-rc.1 decision record, preserved for provenance. For the current local dialogue candidate, see [dialogue-vnext.md](dialogue-vnext.md). Historical feature, privacy and test statements below are not current-candidate verification.
+
 # 座位時間の小数：Web v1.2-rc.1での扱いと承認待ちの仕様案
 
 ## 今回の候補で採用する範囲

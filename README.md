@@ -1,19 +1,17 @@
-# WPTI-Quick Web v1.2-rc.1
+# WPTI-Quick Web 1.3.0-dialogue-rc.1
 
-A browser-based implementation of WPTI-Quick for visualizing wellness-related movement behavior in clinical, educational, public-health, occupational-health, community, and research settings.
+A **dialogue-support prototype**. The primary flow is original three-domain responses → optional life-context discussion → a participant-chosen next step → a printable/copyable summary. Japanese and English are supported.
 
-This pre-release candidate preserves **Quick instrument v1.0** questions, response options, and scoring, and retains the Web v1.1 flow: bilingual recall examples, an optional weekly-minutes calculator, response-level discussion prompts, a self-selected action plan, and copy/print summaries. Web v1.2-rc.1 clarifies the evidence and synchronizes Japanese and English explanations.
+Quick instrument **v1.0 questions, option IDs/labels and scoring are unchanged**. Web and dialogue versions are separate. Unsure or unanswered dialogue entries are not scored. A legacy total is available only for complete instrument responses, under a collapsed reference section; it is not a diagnosis, percentage of health, or validated clinical threshold.
 
-The original WPTI concerns development and initial evaluation of a three-domain movement index intended to support physiotherapy assessment and counselling. Reproducibility of its fixed calculation is distinct from measurement reliability, clinical usefulness, or validation of Quick. The original WPTI and Quick use different calculations; the original study does not validate this categorical Quick score or the Web workflow. Screening and score-based clinical decisions remain proposed applications, not established uses.
-
-See [Scientific and implementation boundaries](docs/scientific-boundaries.md) and [the sitting-time boundary decision](docs/sitting-time-boundaries.md). This candidate has not been deployed; releasing it and revising the instrument are separate decisions.
+See [the vNext specification and release boundaries](docs/dialogue-vnext.md), [scientific boundaries](docs/scientific-boundaries.md), and [unresolved fractional-time categories](docs/sitting-time-boundaries.md).
 
 ## Setup
 
 Install dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
 Run locally:
@@ -34,40 +32,18 @@ Run the scoring tests:
 npm test
 ```
 
-## Scoring Logic
+## Privacy and release status
 
-WPTI-Quick has 3 required items. The total score is Q1 + Q2 + Q3 and ranges from 0 to 100.
+Responses, optional context and plans live only in memory and clear on reload or session reset. No analytics, automatic collection, persistent browser storage, account or server data endpoint is included. Copy/print are explicit user actions. Ordinary hosting request logs are a separate matter; this is not a research database. Do not enter personal identifiers.
 
-- Leisure/exercise physical activity: 0-30
-- Transport-related physical activity: 0-30
-- Sedentary behavior: 0-40
+Synthetic tests and a build verify implementation, not validity or clinical benefit. Field evaluation and health-class data collection require confirmation of the protocol and consent/ethics scope. The author authorized publication on 2026-10-23 after display/print verification and preservation of the previous public version. Deployment success must be verified separately; source approval is not proof of deployment.
 
-Historical v1.0 discussion bands (retained in the scoring module for compatibility, no longer presented as individual result classifications):
+The previous public Web v1.2-rc.1 remains recoverable from commit `d470d06d836e529db96fd4d77ce4aaa0a02e6fce` and branch `archive/web-v1.2-rc.1-review-20261023`. See [preservation and release records](docs/release-preservation.md).
 
-- 0-34 points: discussion can focus on expanding options for daily movement behavior.
-- 35-59 points: modifiable behaviors can be identified more concretely.
-- 60 points or higher: discussion can focus on maintenance and preparation for changes in life context.
+## Scientific provenance
 
-These legacy labels are not validated clinical decision thresholds in either the original WPTI or Quick. They must not assign exercise dose, follow-up frequency, or treatment success.
+The original WPTI is a continuous composite index with fixed preprocessing/PCA-derived coefficients; Quick is a separate categorical instrument. Its 64 possible complete response patterns give 11 totals from 0 to 100 in increments of 10. Neither finer display nor this workflow can retrospectively correct original-paper errors. Historical 35/60 labels are retained only inside compatibility code and are not shown as clinical classifications.
 
-The fixed scoring table is defined in `src/lib/scoring.ts`. Bilingual text is in `src/lib/i18n.ts` and `src/lib/workflow-copy.ts`. The result screen displays actual response categories and item scores, including long sitting regardless of total score. It does not apply the original paper's 35/60 thresholds to Quick. Sitting-time options and their points remain unchanged; no new rounding rule or automatic category assignment is introduced.
+Original paper: Kise S. (2026). Operationalizing wellness in physiotherapy: development and validation of a 0-100 wellness physical therapy index from a national population survey. Physiotherapy Theory and Practice. https://doi.org/10.1080/09593985.2026.2621961
 
-## Privacy
-
-This web version does not request personal identifiers. Responses and optional action plans stay in React state, are not sent to a server, and clear on reload. Free-text fields instruct users not to enter identifiers. Copy and print are user-triggered. The existing Vercel Analytics integration remains for site visits; no response, score, plan, or other custom event is sent to it.
-
-Japanese privacy statement:
-
-回答・行動計画はブラウザ内で処理し、サーバーには送信しません。サイトのアクセス状況はVercel Analyticsで集計します。
-
-## Citation
-
-Kise S. (2026). Operationalizing wellness in physiotherapy: development and validation of a 0-100 wellness physical therapy index from a national population survey. Physiotherapy Theory and Practice. https://doi.org/10.1080/09593985.2026.2621961
-
-## Policy
-
-- WPTI-Quick v1.0 is free to use for clinical, educational, and research purposes.
-- Preserve the Quick v1.0 question wording, response options, and scoring when using that instrument version. A scoring-specification change requires an explicit instrument revision.
-- Cite the original WPTI article and record both the Quick instrument version and Web version used.
-- This tool is not intended for diagnosis, ranking individuals, or estimating disease risk.
-- Recall aids and the optional action plan are not scored. They support discussion; a clinical benefit has not been established.
+Cite the original separately and record the actual Quick instrument, Web and dialogue versions and evaluation dates. Never attribute prototype features to an earlier study period.

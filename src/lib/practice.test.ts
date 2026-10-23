@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildSummary, emptyPlan, responseLabel, weeklyMinutes } from "./practice.ts";
-import { calculateScores } from "./scoring.ts";
+import { buildSummary, responseLabel, weeklyMinutes } from "./practice.ts";
+import { createSession, dialogueReducer, referenceScore } from "./dialogue.ts";
+import type { DialogueSession } from "./dialogue.ts";
 
 const activeButSitting = { leisure: "leisure_151_plus", transport: "transport_151_plus", sedentary: "sedentary_8_plus" } as const;
 
@@ -14,25 +15,73 @@ test("recall helper accepts zero, does not treat blanks as zero, and rejects imp
   }
 });
 
-test("60-point export retains long sitting, scoring provenance, and limitations in both languages", () => {
-  assert.equal(calculateScores(activeButSitting).total, 60);
+test("recall helper preserves decimal values near category gaps without rounding or assigning a category", () => {
+  for (const boundary of [30, 90, 150]) {
+    const value = boundary + 0.04;
+    const result = weeklyMinutes("1", String(value));
+    assert.equal(result, value);
+    assert.ok(result !== null && result > boundary && result < boundary + 1);
+    assert.equal(typeof result, "number");
+  }
+  assert.equal(weeklyMinutes("3", "10.01"), 3 * 10.01);
+});
+
+test("60-point export puts original responses before context, plan and reference score in both languages", () => {
+  const session = { ...createSession(), answers: activeButSitting, demo: true };
+  assert.equal(referenceScore(session.answers)?.total, 60);
   for (const language of ["ja", "en"] as const) {
-    const summary = buildSummary(activeButSitting, emptyPlan, language, "2026-10-02", true);
+    const summary = buildSummary(session, language, "2026-10-23");
     assert.match(summary, /60\/100/);
-    assert.ok(summary.includes(responseLabel(activeButSitting, "sedentary", language)));
-    assert.match(summary, /Quick v1.0 \/ Web v1.2-rc.1/);
+    const sitting = responseLabel(activeButSitting, "sedentary", language);
+    assert.ok(summary.includes(sitting));
+    assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.0-prototype \/ Web v1.3.0-dialogue-rc.1/);
     assert.match(summary, /41606948/);
+    assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
-    assert.match(summary, language === "ja" ? /直接適用できません/ : /do not directly apply/);
+    assert.match(summary, language === "ja" ? /原著WPTIと同一ではありません/ : /not equivalent to the original WPTI/);
+    assert.doesNotMatch(summary, /35–59|60点以上|60 points or higher/);
   }
 });
 
-test("optional plan is exported verbatim without changing scoring; incomplete answers cannot be exported", () => {
-  const plan = { domain: "sedentary", action: "会議の合間に姿勢を変える", when: "会議室", review: "2026-10-09" } as const;
-  const summary = buildSummary(activeButSitting, plan, "ja", "2026-10-02", false);
+test("incomplete answers export with distinct nonresponse states and never an imputed total", () => {
+  let session = createSession();
+  session = dialogueReducer(session, { type: "nonresponse", questionId: "leisure", value: "unsure" });
+  session = dialogueReducer(session, { type: "nonresponse", questionId: "transport", value: "unable" });
+  for (const language of ["ja", "en"] as const) {
+    const summary = buildSummary(session, language, "2026-10-23");
+    assert.doesNotMatch(summary, /\d+\/100/);
+    assert.match(summary, language === "ja" ? /わからない・区分で迷う/ : /Unsure \/ between categories/);
+    assert.match(summary, language === "ja" ? /答えにくい・回答しない/ : /Difficult to answer \/ prefer not to answer/);
+    assert.match(summary, language === "ja" ? /未回答/ : /Unanswered/);
+  }
+});
+
+test("optional context and participant-selected plan export verbatim without changing scoring", () => {
+  let session: DialogueSession = { ...createSession(), answers: activeButSitting };
+  session = dialogueReducer(session, { type: "contextMode", mode: "notes" });
+  session = dialogueReducer(session, { type: "contextField", field: "sitting", value: "会議で長く座る\n日によって違う" });
+  session = dialogueReducer(session, { type: "contextField", field: "period", value: "最近の生活" });
+  session = dialogueReducer(session, { type: "reviewContext" });
+  session = dialogueReducer(session, { type: "planChoice", choice: "maintain" });
+  session = dialogueReducer(session, { type: "planDomain", domain: "sedentary" });
+  session = dialogueReducer(session, { type: "planField", field: "action", value: "休息の時間を大切にする" });
+  session = dialogueReducer(session, { type: "planField", field: "support", value: "無理がある日は休む" });
+  session = dialogueReducer(session, { type: "planField", field: "review", value: "2026-11-09" });
+  const summary = buildSummary(session, "ja", "2026-10-23");
+  for (const text of ["会議で長く座る\n日によって違う", "最近の生活", "今できていることを続ける", "休息の時間を大切にする", "無理がある日は休む", "2026-11-09"]) assert.ok(summary.includes(text));
   assert.match(summary, /60\/100/);
-  assert.ok(summary.includes(plan.action));
-  assert.ok(summary.includes(plan.review));
   assert.doesNotMatch(summary, /架空の回答/);
-  assert.throws(() => buildSummary({}, plan, "ja", "2026-10-02", false), /Missing answers/);
+  assert.equal(referenceScore(session.answers)?.total, 60);
+});
+
+test("talk-only export excludes context and plan text even if stale state is passed", () => {
+  const session = createSession();
+  session.context.mode = "talk-only";
+  session.context.sitting = "SHOULD_NOT_EXPORT";
+  session.plan.action = "SHOULD_NOT_EXPORT";
+  session.contextReviewed = true;
+  const summary = buildSummary(session, "en", "2026-10-23");
+  assert.doesNotMatch(summary, /SHOULD_NOT_EXPORT/);
+  assert.match(summary, /Talk only \(details not recorded\)/);
 });

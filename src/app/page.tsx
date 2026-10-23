@@ -1,457 +1,159 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-
+import { useEffect, useReducer, useRef, useState } from "react";
 import { copy } from "../lib/i18n.ts";
-import {
-  calculateScores,
-  DOMAIN_MAX,
-  getMissingQuestions,
-  getOptionPoints,
-  QUESTION_ORDER
-} from "../lib/scoring.ts";
-import type { AnswerMap, Language, OptionId, QuestionId, ScoreResult } from "../lib/types.ts";
-
-import { Evidence, PlanEditor, RecallHelp } from "./practice.tsx";
-import { buildSummary, emptyPlan, PAPER_URL, responseLabel } from "../lib/practice.ts";
-import type { ActionPlan } from "../lib/practice.ts";
+import { QUESTION_ORDER } from "../lib/scoring.ts";
+import type { Language, OptionId, QuestionId } from "../lib/types.ts";
+import { BehaviorProfile, ContextEditor, ConversationDetails, Evidence, PlanEditor, RecallHelp } from "./practice.tsx";
+import { buildSummary, PAPER_URL } from "../lib/practice.ts";
+import { createSession, dialogueReducer, referenceScore } from "../lib/dialogue.ts";
+import type { DialogueSession, Nonresponse } from "../lib/dialogue.ts";
 import { workflowCopy } from "../lib/workflow-copy.ts";
 
-type View = "home" | "assessment" | "results" | "about" | "howTo" | "citation" | "policy";
-
-const navViews: View[] = ["home", "assessment", "about", "howTo", "citation", "policy"];
+type View = "home" | "assessment" | "context" | "plan" | "results" | "about" | "howTo" | "citation" | "policy";
+const navViews = ["home", "assessment", "about", "howTo", "citation", "policy"] as const;
 
 function formatDate(isoDate: string, language: Language): string {
-  if (!isoDate) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat(language === "ja" ? "ja-JP" : "en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  }).format(new Date(isoDate));
-}
-
-function formatDomainScore(score: number, max: number, language: Language): string {
-  return language === "ja" ? `${score} / ${max}点` : `${score} / ${max}`;
+  return isoDate ? new Intl.DateTimeFormat(language === "ja" ? "ja-JP" : "en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(isoDate)) : "";
 }
 
 export default function Home() {
   const [language, setLanguage] = useState<Language>("ja");
   const [view, setView] = useState<View>("home");
-  const [answers, setAnswers] = useState<AnswerMap>({});
-  const [result, setResult] = useState<ScoreResult | null>(null);
-  const [resultDate, setResultDate] = useState("");
-
-  const [plan, setPlan] = useState<ActionPlan>({ ...emptyPlan });
-  const [demo, setDemo] = useState(false);
+  const [session, dispatch] = useReducer(dialogueReducer, undefined, createSession);
+  const [summaryDate, setSummaryDate] = useState("");
+  const [resetKey, setResetKey] = useState(0);
+  const [resetNotice, setResetNotice] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   useEffect(() => { document.documentElement.lang = language; }, [language]);
-  useEffect(() => { mainRef.current?.querySelector("h1")?.focus(); }, [view]);
+  useEffect(() => { mainRef.current?.querySelector("h1")?.focus(); }, [view, resetKey]);
   const t = copy[language];
   const w = workflowCopy[language];
-  const missingQuestions = useMemo(() => getMissingQuestions(answers), [answers]);
-  const answeredCount = QUESTION_ORDER.length - missingQuestions.length;
-  const completionPercent = Math.round((answeredCount / QUESTION_ORDER.length) * 100);
-  const printableDate = formatDate(resultDate, language);
+  const answeredCount = QUESTION_ORDER.filter(id => session.answers[id]).length;
+  const step = view === "assessment" ? 0 : view === "context" ? 1 : ["plan", "results"].includes(view) ? 2 : -1;
 
-  const visibleNav = result ? [...navViews, "results" as const] : navViews;
-
-  function startAssessment() {
+  function navigate(next: View) { setResetNotice(false); setView(next); }
+  function resetAll() {
+    dispatch({ type: "reset" });
+    setSummaryDate("");
+    setResetKey(value => value + 1);
+    setResetNotice(true);
     setView("assessment");
   }
-
   function selectAnswer(questionId: QuestionId, optionId: OptionId) {
-    setResult(null);
-    setResultDate("");
-    setPlan({ ...emptyPlan });
-    setAnswers((currentAnswers) => ({
-      ...currentAnswers,
-      [questionId]: optionId
-    }));
+    dispatch({ type: "answer", questionId, optionId });
+    setSummaryDate("");
+    setResetNotice(false);
+  }
+  function selectNonresponse(questionId: QuestionId, value: Nonresponse | "") {
+    dispatch({ type: "nonresponse", questionId, value });
+    setSummaryDate("");
+    setResetNotice(false);
+  }
+  function showSummary() {
+    if (!session.contextReviewed) { navigate("context"); return; }
+    setSummaryDate(new Date().toISOString());
+    navigate("results");
   }
 
-  function showScore() {
-    if (missingQuestions.length > 0) {
-      return;
-    }
-
-    setResult(calculateScores(answers));
-    setResultDate(new Date().toISOString());
-    setView("results");
-  }
-
-  function restartAssessment() {
-    setDemo(false);
-    setPlan({ ...emptyPlan });
-    setAnswers({});
-    setResult(null);
-    setResultDate("");
-    setView("assessment");
-  }
-
-  function tryExample() {
-    const example: AnswerMap = { leisure: "leisure_151_plus", transport: "transport_151_plus", sedentary: "sedentary_8_plus" };
-    setAnswers(example);
-    setResult(calculateScores(example));
-    setResultDate(new Date().toISOString());
-    setPlan({ ...emptyPlan });
-    setDemo(true);
-    setView("results");
-  }
-
-  return (
-    <div className="app-shell">
-      <header className="topbar no-print">
-        <div className="topbar-inner">
-          <button className="brand" type="button" onClick={() => setView("home")}>
-            {t.common.appTitle}
-          </button>
-
-          <div className="language-toggle" aria-label="Language">
-            <button
-              className={language === "ja" ? "toggle-active" : ""}
-              type="button"
-              onClick={() => setLanguage("ja")}
-              aria-pressed={language === "ja"}
-            >
-              日本語
-            </button>
-            <button
-              className={language === "en" ? "toggle-active" : ""}
-              type="button"
-              onClick={() => setLanguage("en")}
-              aria-pressed={language === "en"}
-            >
-              English
-            </button>
+  return <div className="app-shell">
+    <header className="topbar no-print">
+      <div className="topbar-inner">
+        <button className="brand" type="button" onClick={() => navigate("home")}>WPTI-Quick <span className="brand-detail">{language === "ja" ? "生活行動を話す" : "A conversation about daily life"}</span></button>
+        <div className="header-controls">
+          <div className="language-toggle" role="group" aria-label={language === "ja" ? "表示言語" : "Language"}>
+            {(["ja", "en"] as const).map(lang => <button key={lang} className={language === lang ? "toggle-active" : ""} type="button" onClick={() => setLanguage(lang)} aria-pressed={language === lang}>{lang === "ja" ? "日本語" : "English"}</button>)}
           </div>
+          <button className="text-button reset-button" type="button" onClick={resetAll}>{t.common.restart}</button>
         </div>
+      </div>
+      <nav className="nav" aria-label={language === "ja" ? "メインメニュー" : "Main navigation"}>
+        {navViews.map(navView => <button className={view === navView ? "nav-active" : ""} key={navView} type="button" onClick={() => navigate(navView)} aria-current={view === navView ? "page" : undefined}>{t.nav[navView]}</button>)}
+        {session.contextReviewed && <button type="button" className={view === "results" ? "nav-active" : ""} onClick={showSummary} aria-current={view === "results" ? "page" : undefined}>{t.nav.results}</button>}
+      </nav>
+    </header>
 
-        <nav className="nav" aria-label="Primary">
-          {visibleNav.map((navView) => (
-            <button
-              className={view === navView ? "nav-active" : ""}
-              key={navView}
-              type="button"
-              onClick={() => setView(navView)}
-            >
-              {t.nav[navView]}
-            </button>
-          ))}
-        </nav>
-      </header>
+    <main className="main" ref={mainRef}>
+      {resetNotice && <p className="notice" role="status">{language === "ja" ? "この画面の回答・背景・計画をすべて消しました。" : "All responses, context notes, and plan details on this page have been cleared."}</p>}
+      {session.demo && <div className="demo-banner" role="status">{w.example}<button className="secondary-button no-print" type="button" onClick={resetAll}>{t.common.restart}</button></div>}
+      {step >= 0 && <ol className="workflow-steps no-print" aria-label={language === "ja" ? "対話の流れ" : "Conversation steps"}>{w.steps.map((label, index) => <li key={label} className={index === step ? "current-step" : ""} aria-current={index === step ? "step" : undefined}><span>0{index + 1}</span>{label}</li>)}</ol>}
 
-      <main className="main" ref={mainRef}>
-        {demo && <div className="demo-banner" role="status">{w.example} <button className="secondary-button no-print" type="button" onClick={restartAssessment}>{t.common.restart}</button></div>}
-        {view === "home" && (
-          <section className="panel home-panel">
-            <p className="eyebrow">{t.home.eyebrow}</p>
-            <h1 tabIndex={-1}>{t.home.title}</h1>
-            <p className="lead">{t.home.body}</p>
-            <ol className="workflow-steps">{w.steps.map((step, index) => <li key={step}><span>0{index + 1}</span>{step}</li>)}</ol>
-            <div className="action-row">
-              <button className="primary-button" type="button" onClick={startAssessment}>
-                {t.common.start}
-              </button>
-              <button className="secondary-button" type="button" onClick={tryExample}>{w.sample}</button>
+      {view === "home" && <section className="panel home-panel">
+        <p className="eyebrow">{language === "ja" ? "対話支援プロトタイプ" : "Dialogue support prototype"}</p>
+        <h1 tabIndex={-1}>{t.home.title}</h1>
+        <p className="lead">{t.home.body}</p>
+        <ol className="workflow-steps">{w.steps.map((label, index) => <li key={label}><span>0{index + 1}</span>{label}</li>)}</ol>
+        <div className="action-row"><button className="primary-button" type="button" onClick={() => navigate("assessment")}>{t.common.start}</button><button className="secondary-button" type="button" onClick={() => { dispatch({ type: "example" }); setSummaryDate(""); navigate("context"); }}>{w.sample}</button></div>
+        <p className="hint">{w.boundary}</p><div className="notice">{w.privacy}</div><p className="hint">{w.consent}</p><Evidence language={language} />
+      </section>}
+
+      {view === "assessment" && <section className="assessment-layout" key={resetKey}>
+        <div className="section-header"><p className="eyebrow">01 / {w.steps[0]}</p><h1 tabIndex={-1}>{t.assessment.title}</h1><p>{t.assessment.intro}</p></div>
+        <p className="response-count" aria-live="polite">{language === "ja" ? `採点項目の回答：${answeredCount} / 3` : `Instrument responses: ${answeredCount} / 3`} <span>{language === "ja" ? "すべて埋める必要はありません" : "You do not need to fill every item"}</span></p>
+        <p className="hint">{w.answerReset}</p>
+        <div className="question-list">
+          {t.questions.map((question, index) => <fieldset className="question-card" key={question.id} aria-describedby={`${question.id}-hint`}>
+            <legend className="sr-only">{`Q${index + 1}. ${question.title}`}</legend>
+            <div className="question-heading" aria-hidden="true"><span className="question-number">Q{index + 1}</span><span className="question-title">{question.title}</span></div>
+            <RecallHelp id={question.id} language={language} />
+            <div className="option-list">{question.options.map(option => <label className="option-row" key={option.id}><input type="radio" name={question.id} value={option.id} checked={session.answers[question.id] === option.id} onChange={() => selectAnswer(question.id, option.id)} /><span>{option.label}</span></label>)}</div>
+            <div className="nonresponse-options"><p id={`${question.id}-nonresponse`}>{w.nonresponseTitle}</p>
+              {(["unsure", "unable"] as const).map(value => <label className="option-row" key={value}><input type="radio" name={question.id} aria-describedby={`${question.id}-nonresponse`} checked={session.nonresponses[question.id] === value} onChange={() => selectNonresponse(question.id, value)} /><span>{w.nonresponses[value]}</span></label>)}
+              <button type="button" className="text-button" onClick={() => selectNonresponse(question.id, "")}>{w.clearAnswer}</button>
             </div>
-            <p className="hint">{w.boundary}</p>
-            <Evidence language={language} />
-          </section>
-        )}
+          </fieldset>)}
+        </div>
+        <div className="assessment-actions"><p className="hint">{t.assessment.incomplete}</p><button className="primary-button" type="button" onClick={() => navigate("context")}>{w.nextContext} →</button></div>
+      </section>}
 
-        {view === "assessment" && (
-          <section className="assessment-layout">
-            <div className="section-header">
-              <p className="eyebrow">{t.common.appTitle}</p>
-              <h1 tabIndex={-1}>{t.assessment.title}</h1>
-              <p>{t.assessment.intro}</p>
-            </div>
+      {view === "context" && <section className="panel flow-panel">
+        <div><p className="eyebrow">02 / {w.steps[1]}</p><h1 tabIndex={-1}>{w.contextTitle}</h1></div>
+        <BehaviorProfile language={language} session={session} />
+        <ContextEditor language={language} session={session} dispatch={dispatch} />
+        {!session.context.mode && <p className="hint" id="context-mode-required">{w.contextRequired}</p>}
+        <div className="result-actions"><button type="button" className="secondary-button" onClick={() => navigate("assessment")}>{w.edit}</button><button type="button" className="primary-button" disabled={!session.context.mode} aria-describedby={!session.context.mode ? "context-mode-required" : undefined} onClick={() => { dispatch({ type: "reviewContext" }); navigate("plan"); }}>{w.nextPlan} →</button></div>
+      </section>}
 
-            <div className="progress-card" aria-label={t.assessment.progress}>
-              <div className="progress-line">
-                <span>{t.assessment.progress}</span>
-                <strong>
-                  {answeredCount}/{QUESTION_ORDER.length} {t.assessment.answered}
-                </strong>
-              </div>
-              <div
-                className="progress-track"
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={QUESTION_ORDER.length}
-                aria-valuenow={answeredCount}
-              >
-                <div className="progress-fill" style={{ width: `${completionPercent}%` }} />
-              </div>
-            </div>
+      {view === "plan" && session.contextReviewed && <section className="panel flow-panel">
+        <div><p className="eyebrow">03 / {w.steps[2]}</p><h1 tabIndex={-1}>{w.planTitle}</h1></div>
+        <PlanEditor language={language} session={session} dispatch={dispatch} />
+        <div className="result-actions"><button type="button" className="secondary-button" onClick={() => navigate("context")}>{w.editContext}</button><button type="button" className="primary-button" onClick={showSummary}>{w.showSummary} →</button></div>
+      </section>}
 
-            <div className="question-list">
-              {t.questions.map((question, index) => (
-                <fieldset className="question-card" key={question.id} aria-describedby={`${question.id}-hint`}>
-                  <legend className="sr-only">{`Q${index + 1}. ${question.title}`}</legend>
-                  <div className="question-heading" aria-hidden="true">
-                    <span className="question-number">Q{index + 1}</span>
-                    <span className="question-title">{question.title}</span>
-                  </div>
-                  <RecallHelp id={question.id} language={language} />
-                  <div className="option-list">
-                    {question.options.map((option) => (
-                      <label className="option-row" key={option.id}>
-                        <input
-                          type="radio"
-                          name={question.id}
-                          value={option.id}
-                          checked={answers[question.id] === option.id}
-                          onChange={() => selectAnswer(question.id, option.id)}
-                        />
-                        <span>{option.label}</span>
-                        <strong>
-                          {getOptionPoints(option.id)} {t.common.points}
-                        </strong>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              ))}
-            </div>
-
-            <div className="assessment-actions">
-              <p className={missingQuestions.length > 0 ? "validation-message" : "validation-ok"}>
-                {missingQuestions.length > 0 ? t.assessment.incomplete : t.privacyStatement}
-              </p>
-              <button
-                className="primary-button"
-                type="button"
-                onClick={showScore}
-                disabled={missingQuestions.length > 0}
-              >
-                {t.common.calculate}
-              </button>
-            </div>
-          </section>
-        )}
-
-        {view === "results" && (
-          <ResultView
-            language={language}
-            printableDate={printableDate}
-            result={result}
-            restartAssessment={restartAssessment}
-            editAnswers={() => setView("assessment")}
-            answers={answers}
-            demo={demo}
-            plan={plan}
-            setPlan={setPlan}
-          />
-        )}
-
-        {view === "about" && (
-          <InfoPanel title={t.about.title}>
-            <p>{t.about.body}</p>
-            <div className="notice">{t.importantStatement}</div>
-            <Evidence language={language} />
-          </InfoPanel>
-        )}
-
-        {view === "howTo" && (
-          <InfoPanel title={t.howTo.title}>
-            <ul className="plain-list">
-              {t.howTo.bullets.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <div className="notice">{t.privacyStatement}</div>
-          </InfoPanel>
-        )}
-
-        {view === "citation" && (
-          <InfoPanel title={t.citation.title}>
-            <p>{t.citation.text}</p>
-            <a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a>
-          </InfoPanel>
-        )}
-
-        {view === "policy" && (
-          <InfoPanel title={t.policy.title}>
-            <ul className="plain-list">
-              {t.policy.bullets.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <div className="notice">{t.privacyStatement}</div>
-          </InfoPanel>
-        )}
-      </main>
-
-      <footer className="footer no-print">
-        <span>{w.version}</span><br />
-        <span>{t.privacyStatement}</span>
-      </footer>
-    </div>
-  );
+      {view === "results" && session.contextReviewed && <SummaryView language={language} session={session} date={formatDate(summaryDate, language)} editAnswers={() => navigate("assessment")} editContext={() => navigate("context")} editPlan={() => navigate("plan")} />}
+      {view === "about" && <InfoPanel title={t.about.title}><p>{t.about.body}</p><div className="notice">{t.importantStatement}</div><Evidence language={language} /></InfoPanel>}
+      {view === "howTo" && <InfoPanel title={t.howTo.title}><ul className="plain-list">{t.howTo.bullets.map(item => <li key={item}>{item}</li>)}</ul><div className="notice">{w.privacy}</div><p>{w.consent}</p></InfoPanel>}
+      {view === "citation" && <InfoPanel title={t.citation.title}><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a><p>{w.version}</p></InfoPanel>}
+      {view === "policy" && <InfoPanel title={t.policy.title}><ul className="plain-list">{t.policy.bullets.map(item => <li key={item}>{item}</li>)}</ul><div className="notice">{w.privacy}</div><p>{w.consent}</p></InfoPanel>}
+    </main>
+    <footer className="footer no-print"><p>{w.version}</p><span>{t.privacyStatement}</span></footer>
+  </div>;
 }
 
-function ResultView({
-  language,
-  printableDate,
-  result,
-  restartAssessment,
-  editAnswers,
-  answers,
-  plan,
-  setPlan,
-  demo
-}: {
-  language: Language;
-  printableDate: string;
-  result: ScoreResult | null;
-  restartAssessment: () => void;
-  editAnswers: () => void;
-  answers: AnswerMap;
-  plan: ActionPlan;
-  setPlan: (plan: ActionPlan) => void;
-  demo: boolean;
-}) {
+function SummaryView({ language, session, date, editAnswers, editContext, editPlan }: { language: Language; session: DialogueSession; date: string; editAnswers: () => void; editContext: () => void; editPlan: () => void }) {
   const t = copy[language];
   const w = workflowCopy[language];
+  const result = referenceScore(session.answers);
   const [copyStatus, setCopyStatus] = useState("");
-  useEffect(() => { setCopyStatus(""); }, [answers, plan, language]);
-  async function copyResult() {
-    try {
-      await navigator.clipboard.writeText(buildSummary(answers, plan, language, printableDate, demo));
-      setCopyStatus(w.copied);
-    } catch { setCopyStatus(w.copyFailed); }
+  useEffect(() => { setCopyStatus(""); }, [session, language]);
+  async function copySummary() {
+    try { await navigator.clipboard.writeText(buildSummary(session, language, date)); setCopyStatus(w.copied); }
+    catch { setCopyStatus(w.copyFailed); }
   }
-
-  if (!result) {
-    return (
-      <section className="panel">
-        <h1 tabIndex={-1}>{t.results.title}</h1>
-        <p>{t.results.noResult}</p>
-        <button className="primary-button" type="button" onClick={restartAssessment}>
-          {t.common.start}
-        </button>
-      </section>
-    );
-  }
-
-  return (
-    <section className="panel result-panel printable-result">
-      <div className="result-heading">
-        <div>
-          <p className="eyebrow">{t.results.printableSummary}</p>
-          <h1 tabIndex={-1}>{t.results.title}</h1>
-          <p>
-            {t.results.date}: <strong>{printableDate}</strong>
-          </p>
-        </div>
-        <div className="score-lockup" aria-label={`${t.results.totalScore}: ${result.total}`}>
-          <span>{t.results.totalScore}</span>
-          <strong>{result.total}</strong>
-          <em>{t.common.outOf100}</em>
-        </div>
-      </div>
-
-      <div className="gauge-block">
-        <div className="gauge-label">
-          <span>{t.results.visualGauge}</span>
-          <strong>{result.total}/100</strong>
-        </div>
-        <div className="score-gauge" aria-hidden="true">
-          <div className="score-gauge-fill" style={{ width: `${result.total}%` }} />
-        </div>
-        <div className="gauge-scale" aria-hidden="true">
-          <span>0</span>
-          <span>50</span>
-          <span>100</span>
-        </div>
-      </div>
-
-      <div className="notice">{w.boundary}</div>
-      {answers.sedentary === "sedentary_8_plus" && <div className="sitting-note">{w.sittingNote}</div>}
-
-      <div className="domain-section score-composition">
-        <p className="eyebrow">02 / {language === "ja" ? "生活行動の内訳" : "BEHAVIOR PROFILE"}</p>
-        <h2>{w.profileTitle}</h2>
-        <p className="hint">{w.profileNote}</p>
-        <div className="domain-list">
-          {QUESTION_ORDER.map((questionId) => (
-            <DomainRow key={questionId} questionId={questionId} result={result} language={language} answers={answers} />
-          ))}
-        </div>
-      </div>
-
-      <PlanEditor language={language} plan={plan} setPlan={setPlan} />
-      <div className="statement">{t.importantStatement}</div>
-      <Evidence language={language} />
-
-      <div className="print-details">
-        <h2>{t.citation.title}</h2>
-        <p>{t.citation.text}</p>
-        <a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a>
-        <p>{w.version}</p>
-      </div>
-
-      <div className="result-actions no-print">
-        <button className="secondary-button" type="button" onClick={editAnswers}>{w.edit}</button>
-        <button className="secondary-button" type="button" onClick={copyResult}>{w.copy}</button>
-        <button className="secondary-button" type="button" onClick={restartAssessment}>
-          {t.common.restart}
-        </button>
-        <button className="primary-button" type="button" onClick={() => window.print()}>
-          {t.common.print}
-        </button>
-      </div>
-      <p role="status" aria-live="polite" className="no-print">{copyStatus}</p>
-      <details className="evidence no-print">
-        <summary>{w.feedback}</summary>
-        <p>{w.feedbackNote}</p>
-        <a href="mailto:kise.ryusei@gmail.com?subject=WPTI-Quick%20feedback">{w.contact}</a>
-      </details>
-    </section>
-  );
-}
-
-function DomainRow({
-  questionId,
-  result,
-  language,
-  answers
-}: {
-  questionId: QuestionId;
-  result: ScoreResult;
-  language: Language;
-  answers: AnswerMap;
-}) {
-  const t = copy[language];
-  const w = workflowCopy[language];
-  const score = result.domainScores[questionId];
-  const max = DOMAIN_MAX[questionId];
-  const width = Math.round((score / max) * 100);
-
-  return (
-    <div className="domain-row">
-      <div className="domain-row-top">
-        <span>{t.domainLabels[questionId]}</span>
-        <strong>{formatDomainScore(score, max, language)}</strong>
-      </div>
-      <p className="response-label">{responseLabel(answers, questionId, language)}</p>
-      <div className="domain-track" aria-hidden="true">
-        <div className="domain-fill" style={{ width: `${width}%` }} />
-      </div>
-      <p className="domain-prompt">{score === max ? w.maintenance[questionId] : w.prompts[questionId]}</p>
-    </div>
-  );
+  const reference = <><p className="reference-total">{language === "ja" ? "参考点" : "Reference total"}: <strong>{result?.total} / 100</strong></p><p className="hint">{w.referenceNote}</p></>;
+  return <section className="panel result-panel printable-result">
+    <div className="result-heading"><div><p className="eyebrow">WPTI-Quick / {language === "ja" ? "対話支援" : "DIALOGUE SUPPORT"}</p><h1 tabIndex={-1}>{w.summaryTitle}</h1><p>{t.results.date}: {date}</p><p>{w.summaryIntro}</p></div></div>
+    <BehaviorProfile language={language} session={session} />
+    <ConversationDetails language={language} session={session} />
+    {result ? <><details className="reference-score no-print"><summary>{w.referenceTitle}</summary>{reference}</details><div className="reference-score print-only"><h2>{w.referenceTitle}</h2>{reference}</div></> : <p className="notice">{w.scoreUnavailable}</p>}
+    <div className="statement">{w.boundary}</div>
+    <Evidence language={language} />
+    <div className="print-details"><p>{w.version}</p><h2>{t.citation.title}</h2><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a></div>
+    <div className="no-print export-controls"><p className="hint">{w.exportNote}</p><div className="result-actions"><button className="secondary-button" type="button" onClick={copySummary}>{w.copy}</button><button className="primary-button" type="button" onClick={() => window.print()}>{t.common.print}</button></div><p role="status" aria-live="polite">{copyStatus}</p></div>
+    <div className="result-actions no-print"><button className="text-button" type="button" onClick={editAnswers}>{w.edit}</button><button className="text-button" type="button" onClick={editContext}>{w.editContext}</button><button className="text-button" type="button" onClick={editPlan}>{w.editPlan}</button></div>
+  </section>;
 }
 
 function InfoPanel({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="panel info-panel">
-      <h1 tabIndex={-1}>{title}</h1>
-      {children}
-    </section>
-  );
+  return <section className="panel info-panel"><h1 tabIndex={-1}>{title}</h1>{children}</section>;
 }

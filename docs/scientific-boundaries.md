@@ -1,3 +1,5 @@
+> Historical Web v1.2-rc.1 decision record, preserved for provenance. For the current local dialogue candidate, see [dialogue-vnext.md](dialogue-vnext.md). Historical feature, privacy and test statements below are not current-candidate verification.
+
 # Web v1.2-rc.1: evidence boundaries and release-candidate notes
 
 ## Source
