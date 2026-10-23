@@ -1,10 +1,12 @@
-# WPTI-Quick Web 1.3.1-dialogue-rc.1
+# WPTI-Quick Web 1.4.0-dialogue-rc.1
 
 A **dialogue-support prototype**. The primary flow is original three-domain responses → optional life-context discussion → a participant-chosen next step → a printable/copyable summary. Japanese and English are supported.
 
 Quick instrument **v1.0 questions, option IDs/labels and scoring are unchanged**. Web and dialogue versions are separate. Unsure or unanswered dialogue entries are not scored. A legacy total is available only for complete instrument responses, under a collapsed reference section; it is not a diagnosis, percentage of health, or validated clinical threshold.
 
 See [the vNext specification and release boundaries](docs/dialogue-vnext.md), [scientific boundaries](docs/scientific-boundaries.md), and [unresolved fractional-time categories](docs/sitting-time-boundaries.md).
+
+The [Web 1.4.0 design](docs/design-1.4.0.md) presents one original question at a time, followed by optional context and planning. Real-user usability evaluation has not yet been conducted.
 
 ## Setup
 
