@@ -9,6 +9,7 @@ import { buildSummary, PAPER_URL } from "../lib/practice.ts";
 import { createSession, dialogueReducer, referenceScore } from "../lib/dialogue.ts";
 import type { DialogueSession, Nonresponse } from "../lib/dialogue.ts";
 import { workflowCopy } from "../lib/workflow-copy.ts";
+import { LivingScene } from "./living-scene.tsx";
 
 type View = "home" | "assessment" | "context" | "plan" | "results" | "about" | "howTo" | "citation" | "policy";
 const navViews = ["home", "assessment", "about", "howTo", "citation", "policy"] as const;
@@ -79,12 +80,17 @@ export default function Home() {
       {step >= 0 && <ol className="workflow-steps no-print" aria-label={language === "ja" ? "対話の流れ" : "Conversation steps"}>{w.steps.map((label, index) => <li key={label} className={index === step ? "current-step" : ""} aria-current={index === step ? "step" : undefined}><span>0{index + 1}</span>{label}</li>)}</ol>}
 
       {view === "home" && <section className="panel home-panel">
-        <p className="eyebrow">{language === "ja" ? "対話支援プロトタイプ" : "Dialogue support prototype"}</p>
-        <h1 tabIndex={-1}>{t.home.title}</h1>
-        <p className="lead">{t.home.body}</p>
-        <ol className="workflow-steps">{w.steps.map((label, index) => <li key={label}><span>0{index + 1}</span>{label}</li>)}</ol>
-        <div className="action-row"><button className="primary-button" type="button" onClick={() => navigate("assessment")}>{t.common.start}</button><button className="secondary-button" type="button" onClick={() => { dispatch({ type: "example" }); setSummaryDate(""); navigate("context"); }}>{w.sample}</button></div>
-        <p className="hint">{w.boundary}</p><div className="notice">{w.privacy}</div><p className="hint">{w.consent}</p><Evidence language={language} />
+        <div className="home-hero">
+          <div className="hero-copy">
+            <p className="eyebrow">{language === "ja" ? "対話支援プロトタイプ" : "Dialogue support prototype"}</p>
+            <h1 className="hero-title" tabIndex={-1}>{t.home.title.split(language === "ja" ? /(?<=[。、])/u : /(?<=\. )/u).map((line, index) => <span key={index}>{line}</span>)}</h1>
+            <p className="lead">{t.home.body}</p>
+            <div className="action-row"><button className="primary-button" type="button" onClick={() => navigate("assessment")}>{t.common.start} <span aria-hidden="true">↗</span></button><button className="secondary-button" type="button" onClick={() => { dispatch({ type: "example" }); setSummaryDate(""); navigate("context"); }}>{w.sample}</button></div>
+          </div>
+          <div className="hero-art no-print" aria-hidden="true"><LivingScene /></div>
+        </div>
+        <div className="home-journey"><ol className="workflow-steps">{w.steps.map((label, index) => <li key={label}><span>0{index + 1}</span>{label}</li>)}</ol></div>
+        <div className="home-guidance"><p className="hint">{w.boundary}</p><div className="notice">{w.privacy}</div><p className="hint">{w.consent}</p><Evidence language={language} /></div>
       </section>}
 
       {view === "assessment" && <section className="assessment-layout" key={resetKey}>
