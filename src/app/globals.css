@@ -1095,7 +1095,8 @@ button, input, textarea { font: inherit; }
   .talk-prompt { margin-bottom: 24px; padding: 24px; background: var(--surface-soft); border-radius: 18px; }
   .talk-prompt h3 { margin: 0 0 10px; color: var(--ink); font-size: 1.3rem; line-height: 1.6; }
   .talk-prompts h3 { line-height: 1.65; }
-  .talk-choice-list { display: grid; gap: 0; margin: 18px 0 0; padding-left: 20px; }
+  .action-plan > .talk-prompt { margin-bottom: 0; }
+  .talk-choice-list { display: grid; gap: 0; margin: 0; padding-left: 20px; }
   .talk-choice-list li { padding: 9px 0; color: var(--ink); font-size: 1rem; line-height: 1.6; }
   .talk-status { border: 0; border-radius: 10px; background: #f5f7fc; color: var(--muted); padding: 12px 14px; font-size: .95rem; font-weight: 500; }
   .secondary-topics h3 { font-size: 1rem; }
@@ -1146,7 +1147,7 @@ button, input, textarea { font: inherit; }
 }
 
 @media screen and (max-width: 599px) {
-  html[lang="en"] .compact-nonresponse { grid-template-columns: minmax(0, 1fr); }
+  .compact-nonresponse { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media screen and (max-width: 960px) {
