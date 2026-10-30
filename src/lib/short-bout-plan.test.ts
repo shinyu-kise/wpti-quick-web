@@ -41,7 +41,7 @@ test("stale, repeated and empty suggestion actions never overwrite a participant
   assert.equal(dialogueReducer(edited, { type: "insertShortBout", value: "Stale example click" }), edited);
 });
 
-test("all 64 original scores survive direct and legacy Japanese and English example actions without changing responses or selecting a domain", () => {
+test("all 64 original scores survive note, direct and legacy Japanese and English example actions without changing responses or selecting a domain", () => {
   let checked = 0;
   for (const leisure of ["leisure_0_30", "leisure_31_90", "leisure_91_150", "leisure_151_plus"] as const) {
     for (const transport of ["transport_0_30", "transport_31_90", "transport_91_150", "transport_151_plus"] as const) {
@@ -52,7 +52,7 @@ test("all 64 original scores survive direct and legacy Japanese and English exam
         const beforeScore = referenceScore(session.answers);
         for (const language of ["ja", "en"] as const) {
           for (const idea of SHORT_BOUT_IDEAS[language]) {
-            for (const type of ["insertShortBout", "startShortBout"] as const) {
+            for (const type of ["insertShortBout", "startShortBout", "noteShortBout"] as const) {
               const after = dialogueReducer(session, { type, value: idea.action });
               assert.deepEqual(after.answers, session.answers);
               assert.deepEqual(after.nonresponses, session.nonresponses);
@@ -68,7 +68,7 @@ test("all 64 original scores survive direct and legacy Japanese and English exam
       }
     }
   }
-  assert.equal(checked, 768);
+  assert.equal(checked, 1152);
 });
 
 test("inserted drafts are erased by reset and talk-only mode but preserved for review after response changes", () => {
@@ -132,4 +132,61 @@ test("direct example selection rejects blank, repeated and stale clicks while al
   const edited = dialogueReducer(started, { type: "planField", field: "action", value: "My own version" });
   assert.equal(edited.plan.action, "My own version");
   assert.equal(dialogueReducer(edited, { type: "startShortBout", value: "Stale example" }), edited);
+});
+
+test("copying an example to a fresh note does not invent a decision to change habits", () => {
+  const before = dialogueReducer(createSession(), { type: "example" });
+  const noted = dialogueReducer(before, { type: "noteShortBout", value: "An example to consider" });
+  assert.equal(noted.context.mode, "notes");
+  assert.equal(noted.plan.choice, "");
+  assert.equal(noted.plan.domain, "");
+  assert.equal(noted.plan.action, "An example to consider");
+  assert.equal(noted.planNeedsReview, false);
+  assert.deepEqual(noted.answers, before.answers);
+  assert.deepEqual(referenceScore(noted.answers), referenceScore(before.answers));
+  for (const language of ["ja", "en"] as const) {
+    assert.ok(buildSummary(noted, language, "2026-10-30").includes("An example to consider"));
+  }
+});
+
+test("example notes retain context, details and review state while protecting existing notes and maintain or none choices", () => {
+  let checked = 0;
+  for (const mode of ["", "notes", "talk-only"] as const) {
+    for (const choice of ["", "change", "maintain", "none"] as const) {
+      for (const action of ["", " \n\t", "My existing note"]) {
+        const before: DialogueSession = {
+          ...createSession(),
+          context: { ...createSession().context, mode, demands: "My work and home circumstances" },
+          plan: { choice, action, domain: "other", when: "After work", support: "An indoor option", review: "2026-11-06" },
+          contextReviewed: true,
+          planNeedsReview: true
+        };
+        const after = dialogueReducer(before, { type: "noteShortBout", value: "An example to consider" });
+        if (["", "change"].includes(choice) && !action.trim()) {
+          assert.deepEqual(after, {
+            ...before,
+            context: { ...before.context, mode: "notes" },
+            plan: { ...before.plan, action: "An example to consider" }
+          });
+        } else {
+          assert.equal(after, before);
+        }
+        checked += 1;
+      }
+    }
+  }
+  assert.equal(checked, 36);
+});
+
+test("blank, repeated and stale example-note clicks cannot overwrite a note that the person has edited", () => {
+  const initial = createSession();
+  for (const value of ["", " \n\t"]) {
+    assert.equal(dialogueReducer(initial, { type: "noteShortBout", value }), initial);
+  }
+  const noted = dialogueReducer(initial, { type: "noteShortBout", value: "First example" });
+  assert.equal(dialogueReducer(noted, { type: "noteShortBout", value: "Another example" }), noted);
+  const edited = dialogueReducer(noted, { type: "writeMemo", value: "My own version" });
+  assert.equal(edited.plan.choice, "");
+  assert.equal(edited.plan.action, "My own version");
+  assert.equal(dialogueReducer(edited, { type: "noteShortBout", value: "Stale example" }), edited);
 });

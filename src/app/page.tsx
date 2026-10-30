@@ -4,13 +4,13 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { copy } from "../lib/i18n.ts";
 import { QUESTION_ORDER } from "../lib/scoring.ts";
 import type { Language, OptionId, QuestionId } from "../lib/types.ts";
-import { BehaviorProfile, ContextEditor, ConversationDetails, Evidence, PlanEditor } from "./practice.tsx";
+import { BehaviorProfile, ConversationDetails, Evidence, PlanEditor } from "./practice.tsx";
 import { buildSummary, PAPER_URL } from "../lib/practice.ts";
 import { createSession, dialogueReducer, referenceScore } from "../lib/dialogue.ts";
 import type { DialogueAction, DialogueSession, Nonresponse } from "../lib/dialogue.ts";
 import { workflowCopy } from "../lib/workflow-copy.ts";
 import { guidedCopy } from "../lib/guided-copy.ts";
-import { ShortBoutIdeas } from "./short-bouts.tsx";
+import { ResultActionIdeas, ShortBoutIdeas } from "./short-bouts.tsx";
 import { Assessment } from "./assessment.tsx";
 
 type View = "home" | "assessment" | "results" | "about" | "howTo" | "citation" | "policy";
@@ -109,13 +109,12 @@ export default function Home() {
             <p className="eyebrow">WELLNESS, YOUR WAY.</p>
             <h1 className="hero-title" tabIndex={-1}>{u.title.map((line, index) => <span className={index === 2 ? "hero-accent" : ""} key={line}>{line}</span>)}</h1>
             <p className="lead">{u.intro}</p>
-            <p className="audience-note">{u.audience}</p>
             <div className="action-row"><button className="primary-button" type="button" onClick={() => navigate(hasProgress ? lastStep : "assessment")}>{hasProgress ? u.resume : u.start} <span aria-hidden="true">→</span></button>{!hasProgress && <button className="secondary-button" type="button" onClick={() => { dispatch({ type: "example" }); setSummaryDate(new Date().toISOString()); navigate("results"); }}>{u.example}</button>}</div>
             <p className="mini-privacy">{u.privacy}</p>
           </div>
           <div className="hero-art no-print" aria-hidden="true"><img src="/wellness-path.jpg" alt="" width="1122" height="1402" fetchPriority="high" /></div>
         </div>
-        <div className="home-journey"><ol className="home-steps">{u.phases.map((label, index) => <li key={label}><span>0{index + 1}</span><strong>{label}</strong></li>)}</ol></div>
+        <div className="home-journey"><ol className="home-steps" role="list">{u.phases.map((label, index) => <li key={label}>{index > 0 && <span aria-hidden="true">→</span>}<strong>{label}</strong></li>)}</ol></div>
       </section>}
 
       {view === "assessment" && <Assessment key={resetKey} language={language} session={session} hasDownstream={hasDownstream} selectAnswer={selectAnswer} selectNonresponse={selectNonresponse} showSummary={showSummary} goHome={() => navigate("home")} />}
@@ -134,6 +133,7 @@ function SummaryView({ language, session, dispatch, date, editAnswers, goHome }:
   const t = copy[language], w = workflowCopy[language], u = guidedCopy[language];
   const ja = language === "ja";
   const result = referenceScore(session.answers);
+  const hasMemo = session.context.mode === "notes" && (Object.values(session.plan).some(value => value.trim()) || Object.entries(session.context).some(([field, value]) => field !== "mode" && value.trim()));
   const [stage, setStage] = useState<"result" | "ideas" | "plan">("result");
   const [copyStatus, setCopyStatus] = useState("");
   const panelRef = useRef<HTMLElement>(null);
@@ -143,7 +143,6 @@ function SummaryView({ language, session, dispatch, date, editAnswers, goHome }:
     window.scrollTo(0, 0);
   }, [stage]);
   function openPlan() {
-    if (session.context.mode !== "notes") dispatch({ type: "contextMode", mode: "notes" });
     setStage("plan");
   }
   async function copySummary() {
@@ -153,29 +152,25 @@ function SummaryView({ language, session, dispatch, date, editAnswers, goHome }:
   const reference = <><p className="reference-total">{ja ? "参考点" : "Reference total"}: <strong>{result?.total} / 100</strong></p><p className="hint">{w.referenceNote}</p></>;
   return <section className="panel result-panel printable-result quick-result" ref={panelRef}>
     <div className={stage === "result" ? "result-heading" : "print-only"}>
-      <div><h1 className={stage === "result" ? "screen-heading" : undefined} tabIndex={-1}><span className="no-print">{ja ? "回答の結果" : "Your responses"}</span><span className="print-only">{w.summaryTitle}</span></h1><p className="print-only">{t.results.date}: {date}</p><p className="print-only">{w.summaryIntro}</p></div>
+      <div><h1 className={stage === "result" ? "screen-heading" : undefined} tabIndex={-1}><span className="no-print">{ja ? "3つの項目の結果" : "Your results across three areas"}</span><span className="print-only">{w.summaryTitle}</span></h1><p className="print-only">{t.results.date}: {date}</p><p className="print-only">{w.summaryIntro}</p></div>
       <button className="text-button no-print edit-responses" type="button" onClick={editAnswers}>{w.edit}</button>
     </div>
-    <div className={stage === "result" ? "response-overview" : "print-only"}><BehaviorProfile language={language} session={session} /></div>
+    <div className={stage === "result" ? "response-overview" : "print-only"}><BehaviorProfile language={language} session={session}>{stage === "result" && <ResultActionIdeas language={language} session={session} dispatch={dispatch} onOpenPlan={openPlan} />}</BehaviorProfile></div>
     {stage === "result" && <div className="result-finish no-print">
-      <p className="completion-message">{ja ? "回答はこれで終わりです。" : "You have finished the questions."}</p>
-      {session.plan.choice && <div className="chosen-action"><strong>{w.planChoices[session.plan.choice]}</strong>{session.plan.action && <p>{session.plan.action}</p>}</div>}
+      {hasMemo && (session.plan.action.trim() || session.plan.choice) && <div className="chosen-action"><strong>{ja ? "メモ" : "Note"}</strong>{session.plan.action.trim() && <p>{session.plan.action}</p>}{session.plan.choice && <p>{w.planChoices[session.plan.choice]}</p>}</div>}
       {session.planNeedsReview && <p className="notice" role="status">{w.planReviewPending}</p>}
-      <div className="completion-actions"><button className="primary-button" type="button" onClick={goHome}>{ja ? "はじめの画面へ" : "Back to start"}</button>
-      <button className="secondary-button" type="button" onClick={() => session.plan.choice ? openPlan() : setStage("ideas")}>{session.plan.choice ? ja ? "メモを見直す" : "Review your note" : ja ? "やってみたいことを選ぶ（任意）" : "Choose something to do (optional)"}</button></div>
+      <div className="completion-actions"><button className="secondary-button" type="button" onClick={openPlan}>{hasMemo ? ja ? "メモを見直す" : "Review your note" : ja ? "自分でメモを書く（任意）" : "Write your own note (optional)"}</button>
+      <button className="text-button" type="button" onClick={goHome}>{ja ? "はじめの画面へ" : "Back to start"}</button></div>
     </div>}
     {stage === "ideas" && <div className="optional-screen no-print">
-      <h1 className="screen-heading" tabIndex={-1}>{ja ? "やってみたいことはありますか？" : "Is there something you would like to do?"}</h1>
-      <p>{ja ? "選ばずに終わっても大丈夫です。" : "It is fine to finish without choosing."}</p>
-      <div className="action-row"><button className="secondary-button" type="button" onClick={() => setStage("result")}>{ja ? "結果に戻る" : "Back to responses"}</button><button className="text-button" type="button" onClick={openPlan}>{ja ? "自分で決める" : "Choose for yourself"}</button></div>
+      <h1 className="screen-heading" tabIndex={-1}>{ja ? "行動の例" : "Activity ideas"}</h1>
+      <p>{ja ? "選んだ内容をメモに入れられます。" : "You can add an idea to your note."}</p>
+      <button className="text-button" type="button" onClick={openPlan}>{ja ? "メモに戻る" : "Back to your note"}</button>
       <ShortBoutIdeas language={language} session={session} dispatch={dispatch} onOpenPlan={() => setStage("plan")} />
     </div>}
     {stage === "plan" && <div className="optional-screen plan-screen no-print">
-      <h1 className="screen-heading" tabIndex={-1}>{session.plan.choice ? ja ? "メモを確認する" : "Check your note" : ja ? "これからどうしますか？" : "What would you like to do?"}</h1>
-      <p>{ja ? "書かずに終わっても大丈夫です。" : "You can finish without writing anything."}</p>
-      <PlanEditor language={language} session={session} dispatch={dispatch} onDone={() => setStage("result")} />
-      <details className="additional-context"><summary>{ja ? "暮らしのこともメモする（任意）" : "Add notes about daily life (optional)"}</summary><ContextEditor language={language} session={session} dispatch={dispatch} /></details>
-      <button className="text-button" type="button" onClick={() => setStage("result")}>{ja ? "結果に戻る" : "Back to responses"}</button>
+      <h1 className="screen-heading" tabIndex={-1}>{ja ? "メモ（任意）" : "Note (optional)"}</h1>
+      <PlanEditor language={language} session={session} dispatch={dispatch} onDone={() => setStage("result")} onShowIdeas={() => setStage("ideas")} />
     </div>}
     {stage === "result" && <div className="result-extras no-print">
       <details className="reference-score"><summary>{w.referenceTitle}</summary>{result ? reference : <p>{w.scoreUnavailable}</p>}</details>

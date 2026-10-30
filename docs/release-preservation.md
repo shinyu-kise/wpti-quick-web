@@ -81,3 +81,10 @@ See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction chang
 - Preservation branch: `archive/web-v1.8.0-before-domain-feedback-20261030`.
 - Web 1.9.0 / Dialogue 1.4 makes each domain's points and point-based reflection candidates visible. Quick v1.0 scoring remains unchanged.
 - The author requested clearer domain feedback on 2026-10-30; see [design and boundaries](design-1.9.0.md). Earlier release archives are retained.
+
+## Web 1.9.0 preserved before the first-use flow update
+
+- Previous production source: `04b31e095dafae48ea2630d4cc3bdc60095a1b4b`.
+- Preservation branch: `archive/web-v1.9.0-before-first-use-20261030`.
+- Web 1.9.1 / Dialogue 1.5 connects results directly to activity examples, simplifies optional notes, and clarifies leisure/exercise wording. Quick v1.0 questions, options, recall period and scoring remain unchanged.
+- The author reviewed the interactive preview and approved publication on 2026-10-30, subject to final desktop/mobile and scoring checks. See [design and validation limits](design-1.9.1.md). An offline source archive and Git bundle are retained with SHA-256 records.

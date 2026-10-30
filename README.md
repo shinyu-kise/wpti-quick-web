@@ -1,12 +1,12 @@
-# WPTI-Quick Web 1.9.0-dialogue-rc.1
+# WPTI-Quick Web 1.9.1-dialogue-rc.1
 
-A **dialogue-support prototype**. Desktop shows three questions together; narrow screens show one question at a time. The response summary shows each item’s points/max and point-based reflection candidates, then explicitly marks the end of the questions. Optional action ideas and notes open separately. Japanese and English are supported.
+A **dialogue-support prototype**. Desktop shows three questions together; narrow screens show one question at a time. The response summary shows each item’s points/max and point-based reflection candidates. An optional note opens directly from the result with one text field; activity ideas and detailed notes are available only when requested. The start screen explains the path from questions to results and activity ideas. Results show concrete examples for every tied reflection candidate immediately; general examples remain available without completing a note. Leisure activity includes physically active recreation, not only exercise. Japanese and English are supported.
 
-Quick instrument **v1.0 source questions, option IDs/labels and scoring are unchanged**. Web 1.9.0 uses shorter everyday Japanese, while retaining original question wording in help and print. See [the short reading flow](docs/design-1.8.0.md) and [domain feedback](docs/design-1.9.0.md). Web and dialogue versions are separate. Unsure or unanswered dialogue entries are not scored. A legacy total is available only for complete instrument responses, under a collapsed reference section; it is not a diagnosis, percentage of health, or validated clinical threshold.
+Quick instrument **v1.0 source questions, option IDs/labels and scoring are unchanged**. Web 1.9.1 uses shorter everyday Japanese, while retaining original question wording in help and print. See [the short reading flow](docs/design-1.8.0.md), [domain feedback](docs/design-1.9.0.md), and [clearer flow and leisure wording](docs/design-1.9.1.md). Web and dialogue versions are separate. Unsure or unanswered dialogue entries are not scored. A legacy total is available only for complete instrument responses, under a collapsed reference section; it is not a diagnosis, percentage of health, or validated clinical threshold.
 
 See [the vNext specification and release boundaries](docs/dialogue-vnext.md), [scientific boundaries](docs/scientific-boundaries.md), and [unresolved fractional-time categories](docs/sitting-time-boundaries.md).
 
-The [Web 1.5.0 design](docs/design-1.5.0.md) restores the short v1.1 response flow following author feedback on v1.4. That release used Dialogue 1.1-prototype. Web 1.9.0 uses Dialogue 1.4-prototype; Quick scoring remains v1.0. Comparative user testing has not been conducted.
+The [Web 1.5.0 design](docs/design-1.5.0.md) restores the short v1.1 response flow following author feedback on v1.4. That release used Dialogue 1.1-prototype. Web 1.9.1 uses Dialogue 1.5-prototype; Quick scoring remains v1.0. Comparative user testing has not been conducted.
 
 ## Setup
 

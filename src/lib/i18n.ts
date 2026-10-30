@@ -89,7 +89,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "利用上の注意"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.9.0-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
       start: "生活行動から話し始める",
       restart: "入力をすべて消す",
       print: "印刷 / PDF保存",
@@ -98,7 +98,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "100点満点"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.9.0-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
       title: "運動と座る時間を振り返りましょう。",
       body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。一人で、または理学療法士などの支援者と一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
     },
@@ -156,7 +156,7 @@ export const copy: Record<Language, AppCopy> = {
         "対象者: 成人",
         "過去1週間の平均的な状況を振り返って、3問に答えます。生活背景に別の時期をメモしても、3問で振り返る期間は変わりません。",
         "回答できる項目を選びます。わからない・答えにくい・未回答のままでも対話できます。",
-        "結果を確認したら、ここで終わっても大丈夫です。希望する方は、やってみたいことや今の生活についてメモできます。",
+        "結果画面では、3つの項目の回答と点数を見られます。希望する方は、やってみたいことや今の生活についてメモできます。",
         "メモせずに振り返るだけでも使えます。誰かと使う場合は、記録してよい内容を本人と確認してください。まとめはコピー・印刷・PDF保存できます。再読み込みやリセットで画面の入力は消えます。"
       ]
     },
@@ -219,7 +219,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "Policy"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.9.0-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
       start: "Start with daily behavior",
       restart: "Clear all inputs",
       print: "Print / Save as PDF",
@@ -228,7 +228,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "out of 100"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.9.0-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
       title: "Move, travel, sit. Reflect on daily life. Choose a next step.",
       body: "Explore leisure and transport activity and sedentary time with three questions. Use the results on your own or with a physiotherapist or another support person to reflect on daily life and choose a manageable next step."
     },
@@ -286,7 +286,7 @@ export const copy: Record<Language, AppCopy> = {
         "Target users: adults",
         "Recall period for the three items: average situation during the past 1 week. The optional context-period note is separate and does not change this recall period.",
         "Select responses where possible. Unsure, unable to answer, and unanswered items do not prevent a conversation.",
-        "You can finish after checking your responses. If you wish, choose something you would like to do or add notes about daily life.",
+        "The results show your responses and scores across three areas. If you wish, choose something you would like to do or add notes about daily life.",
         "You can reflect without recording notes. If using this with someone else, agree what may be recorded. Copy, print, or save the summary as PDF if you wish. Reloading or resetting clears page inputs."
       ]
     },

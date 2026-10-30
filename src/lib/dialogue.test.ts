@@ -162,6 +162,60 @@ test("changing a plan choice or topic never silently carries the previous action
   assert.equal(rejectedText.plan.action, "");
 });
 
+test("a first memo records text without choosing a plan, while blank input leaves an untouched session alone", () => {
+  const before = dialogueReducer(createSession(), { type: "example" });
+  for (const value of ["", " \n "]) {
+    assert.equal(dialogueReducer(before, { type: "writeMemo", value }), before);
+  }
+  const written = dialogueReducer(before, { type: "writeMemo", value: "仕事の後に歩く時間を考えたい" });
+  assert.equal(written.context.mode, "notes");
+  assert.deepEqual(written.plan, { ...emptyPlan, action: "仕事の後に歩く時間を考えたい" });
+  assert.deepEqual(written.answers, before.answers);
+  assert.equal(referenceScore(written.answers)?.total, 60);
+  assert.equal(written.planNeedsReview, false);
+  const pending = dialogueReducer(written, { type: "answer", questionId: "transport", optionId: "transport_31_90" });
+  assert.equal(pending.planNeedsReview, true);
+  const erased = dialogueReducer(pending, { type: "writeMemo", value: "" });
+  assert.deepEqual(erased.plan, emptyPlan);
+  assert.equal(erased.planNeedsReview, false);
+});
+
+test("memo edits retain existing choices, context, other details and pending review", () => {
+  for (const choice of ["", "maintain", "none"] as const) {
+    let before = dialogueReducer(plannedSession(), { type: "planChoice", choice });
+    before = dialogueReducer(before, { type: "writeMemo", value: "Previous note" });
+    before = dialogueReducer(before, { type: "writeMemo", field: "when", value: "After work" });
+    before = dialogueReducer(before, { type: "writeMemo", field: "support", value: "An indoor alternative" });
+    before = dialogueReducer(before, { type: "writeMemo", field: "review", value: "2026-11-06" });
+    before = dialogueReducer(before, { type: "contextField", field: "demands", value: "Work and caring commitments" });
+    before = dialogueReducer(before, { type: "reviewContext" });
+    assert.equal(before.planNeedsReview, true);
+    for (const field of ["action", "when", "support", "review"] as const) {
+      const after = dialogueReducer(before, { type: "writeMemo", field, value: field === "review" ? "2026-11-13" : `Updated ${field}` });
+      assert.deepEqual(after.plan, { ...before.plan, [field]: field === "review" ? "2026-11-13" : `Updated ${field}` });
+      assert.deepEqual(after.context, before.context);
+      assert.equal(after.contextReviewed, true);
+      assert.equal(after.planNeedsReview, true);
+      assert.equal(referenceScore(after.answers)?.total, 60);
+    }
+    const clearedAction = dialogueReducer(before, { type: "writeMemo", value: "" });
+    assert.equal(clearedAction.planNeedsReview, true);
+    assert.deepEqual(clearedAction.plan, { ...before.plan, action: "" });
+  }
+});
+
+test("talk-only and reset erase direct memos, and a new explicit memo can resume recording", () => {
+  const before = dialogueReducer(createSession(), { type: "writeMemo", value: "A temporary note" });
+  const talkOnly = dialogueReducer(before, { type: "contextMode", mode: "talk-only" });
+  assert.deepEqual(talkOnly.plan, emptyPlan);
+  assert.deepEqual(talkOnly.context, { ...emptyContext, mode: "talk-only" });
+  assert.equal(dialogueReducer(talkOnly, { type: "writeMemo", value: " " }), talkOnly);
+  const resumed = dialogueReducer(talkOnly, { type: "writeMemo", value: "A newly written note" });
+  assert.equal(resumed.context.mode, "notes");
+  assert.deepEqual(resumed.plan, { ...emptyPlan, action: "A newly written note" });
+  assert.deepEqual(dialogueReducer(resumed, { type: "reset" }), createSession());
+});
+
 test("reset clears every input and the demo marker, with independent fresh objects", () => {
   const pending = dialogueReducer(plannedSession(), { type: "contextField", field: "supports", value: "Community support" });
   const after = dialogueReducer(pending, { type: "reset" });
