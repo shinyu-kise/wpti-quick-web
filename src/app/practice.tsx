@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Dispatch } from "react";
+import type { Dispatch, ReactNode } from "react";
 import { copy } from "../lib/i18n.ts";
 import { PAPER_URL, responseLabel, weeklyMinutes } from "../lib/practice.ts";
 import { CONTEXT_FIELDS } from "../lib/dialogue.ts";
@@ -49,15 +49,16 @@ export function RecallHelp({ id, language }: { id: QuestionId; language: Languag
   </div>;
 }
 
-export function BehaviorProfile({ language, session, compact = true }: Pick<DialogueProps, "language" | "session"> & { compact?: boolean }) {
+export function BehaviorProfile({ language, session, compact = true, children }: Pick<DialogueProps, "language" | "session"> & { compact?: boolean; children?: ReactNode }) {
   const t = copy[language], w = workflowCopy[language], c = domainFeedbackCopy[language];
   const feedback = getDomainFeedback(session.answers);
   return <section className="domain-section behavior-profile scored-profile" aria-labelledby="profile-title">
-    <h2 id="profile-title">{c.title}</h2>
     <div className={`domain-feedback-message feedback-${feedback.status}`}>
       <p className="feedback-headline">{domainFeedbackMessage(feedback, language)}</p>
-      {feedback.status === "comparable" && <p>{feedback.focusIds.length === 1 ? c.hints[feedback.focusIds[0]] : c.choose}</p>}
+      {!children && feedback.status === "comparable" && <p className="no-print">{feedback.focusIds.length === 1 ? c.hints[feedback.focusIds[0]] : c.choose}</p>}
     </div>
+    {children}
+    <h2 id="profile-title">{c.title}</h2>
     <p className={`hint${compact ? " print-only" : ""}`}>{t.assessment.recallPeriod}</p>
     <div className="domain-list">
       {QUESTION_ORDER.map(id => {
@@ -166,88 +167,61 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
   </section>;
 }
 
-export function PlanEditor({ language, session, dispatch, onDone }: DialogueProps & { onDone?: () => void }) {
+export function PlanEditor({ language, session, dispatch, onDone, onShowIdeas }: DialogueProps & { onDone?: () => void; onShowIdeas?: () => void }) {
   const planRef = useRef<HTMLElement>(null);
   const choicesRef = useRef<HTMLDetailsElement>(null);
   const focusAfterReview = useRef(false);
-  const focusAfterNotes = useRef(false);
   const focusAfterChoice = useRef(false);
-  useEffect(() => {
-    if (session.context.mode === "notes" && focusAfterNotes.current) {
-      focusAfterNotes.current = false;
-      planRef.current?.querySelector<HTMLElement>('input[name="plan-choice"]')?.focus();
-    }
-  }, [session.context.mode]);
   useEffect(() => {
     if (!session.planNeedsReview && focusAfterReview.current) {
       focusAfterReview.current = false;
-      (planRef.current?.querySelector<HTMLElement>('#plan-action') ?? planRef.current?.querySelector<HTMLElement>('.plan-complete button') ?? planRef.current)?.focus();
+      planRef.current?.querySelector<HTMLElement>("#plan-action")?.focus();
     }
   }, [session.planNeedsReview]);
   useEffect(() => {
     if (!focusAfterChoice.current) return;
     focusAfterChoice.current = false;
-    (planRef.current?.querySelector<HTMLElement>(session.plan.choice ? '#plan-action, .plan-complete button' : 'input[name="plan-choice"]') ?? planRef.current)?.focus();
+    planRef.current?.querySelector<HTMLElement>("#plan-action")?.focus();
   }, [session.plan.choice]);
   const w = workflowCopy[language];
+  const ja = language === "ja";
   const plan = session.plan;
-  const hasPlan = ["change", "maintain"].includes(plan.choice);
+  const notes = session.context.mode === "notes";
   const hasPlanDetails = [plan.domain, plan.action, plan.when, plan.support, plan.review].some(Boolean);
-  const changeWarning = language === "ja" ? "選び直すと、ここに書いたメモは消えます。" : "Choosing something else clears the plan details entered here.";
   function choose(choice: PlanChoice) {
     focusAfterChoice.current = true;
+    if (!notes) dispatch({ type: "contextMode", mode: "notes" });
     dispatch({ type: "planChoice", choice });
     if (choicesRef.current) choicesRef.current.open = false;
   }
-  const choices = <fieldset className="plan-choices">
-    <legend>{language === "ja" ? "今の気持ちに近いものを選んでください" : "Choose what feels right for you"}</legend>
-    {(Object.keys(w.planChoices) as Exclude<PlanChoice, "">[]).map(choice => <label key={choice} className={plan.choice === choice ? "chosen" : ""}>
-      <input type="radio" name="plan-choice" checked={plan.choice === choice} onChange={() => choose(choice)} />
-      {w.planChoices[choice]}
-    </label>)}
-  </fieldset>;
-  const doneButton = onDone && <div className="plan-complete"><button className="primary-button" type="button" onClick={onDone}>{language === "ja" ? "これで終わる" : "Done"}</button></div>;
-  return <section className="action-plan" aria-label={w.planTitle} tabIndex={-1} ref={planRef}>
+  return <section className="action-plan simple-memo" aria-label={ja ? "メモ" : "Note"} ref={planRef}>
     {session.planNeedsReview && <PlanReviewNotice language={language} onConfirm={() => { focusAfterReview.current = true; dispatch({ type: "acknowledgePlanReview" }); }} />}
-    {session.context.mode !== "notes" ? <>
-      <p className="talk-status">{w.notRecorded}</p>
-      <div className="talk-prompt"><h3>{language === "ja" ? "今の気持ちに近いものは？" : "What feels right for you now?"}</h3></div>
-      <ul className="talk-choice-list">{Object.values(w.planChoices).map(label => <li key={label}>{label}</li>)}</ul>
-      <button className="secondary-button enable-plan-notes" type="button" onClick={() => {
-        focusAfterNotes.current = true;
-        dispatch({ type: "contextMode", mode: "notes" });
-      }}>{language === "ja" ? "メモを書く" : "Write a note"}</button>
-      {doneButton}
-    </> : <>
-      {plan.choice ? <p className="plan-current-choice">{w.planChoices[plan.choice]}</p> : choices}
-      {hasPlan && <>
-        <RecordingPrivacy language={language} />
-        <div className="plan-fields plan-primary">
-          <label htmlFor="plan-action">{w.action}<textarea id="plan-action" rows={3} maxLength={500} autoComplete="off" value={plan.action} onChange={e => dispatch({ type: "planField", field: "action", value: e.target.value })} /></label>
-        </div>
-      </>}
-      {doneButton}
-      {plan.choice && <details className="editor-details plan-choice-change" ref={choicesRef}>
-        <summary>{language === "ja" ? "選び直す" : "Change my choice"}</summary>
-        {hasPlanDetails && <p className="change-warning">{changeWarning}</p>}
-        {choices}
-        <button type="button" className="text-button" onClick={() => choose("")}>{w.noPlan}</button>
-      </details>}
-      {hasPlan && <>
-        <details className="editor-details plan-more">
-          <summary>{language === "ja" ? "いつやるかなど、詳しく書く" : "Add details, such as when to do it"}</summary>
-          <div className="plan-fields">
-            {(["when", "support"] as const).map(field => <label key={field} htmlFor={`plan-${field}`}>{w[field]}<textarea id={`plan-${field}`} rows={2} maxLength={500} autoComplete="off" value={plan[field]} onChange={e => dispatch({ type: "planField", field, value: e.target.value })} /></label>)}
-            <label htmlFor="plan-review">{w.review}<input id="plan-review" type="date" autoComplete="off" value={plan.review} onChange={e => dispatch({ type: "planField", field: "review", value: e.target.value })} /></label>
-          </div>
-        </details>
-      </>}
-    </>}
-    <details className="editor-details plan-guidance">
-      <summary>{language === "ja" ? "何を書くか迷ったら" : "If you are unsure what to write"}</summary>
-      <p>{w.planIntro}</p>
-      <p>{w.personalized}</p>
-      <p>{w.reviewNote}</p>
+    <div className="plan-fields plan-primary">
+      <label htmlFor="plan-action">{w.action}<textarea id="plan-action" rows={3} maxLength={500} autoComplete="off" aria-describedby="memo-privacy" placeholder={ja ? "例：昼休みに少し歩く" : "For example: take a short walk during lunch"} value={notes ? plan.action : ""} onChange={e => dispatch({ type: "writeMemo", value: e.target.value })} /></label>
+    </div>
+    <p className="hint memo-privacy" id="memo-privacy">{ja ? "名前は書かないでください。メモは再読み込みで消えます。" : "Do not enter names. Reloading clears your note."}</p>
+    <div className="action-row memo-actions">
+      {onDone && <button className="primary-button" type="button" onClick={onDone}>{ja ? "結果に戻る" : "Back to results"}</button>}
+      {onShowIdeas && <button className="text-button" type="button" onClick={onShowIdeas}>{ja ? "行動の例を見る" : "See activity ideas"}</button>}
+    </div>
+    <details className="editor-details memo-more">
+      <summary>{ja ? "日時や生活状況も書く（任意）" : "Add timing or daily-life details (optional)"}</summary>
+      <div className="plan-fields">
+        {(["when", "support"] as const).map(field => <label key={field} htmlFor={`plan-${field}`}>{w[field]}<textarea id={`plan-${field}`} rows={2} maxLength={500} autoComplete="off" value={notes ? plan[field] : ""} onChange={e => dispatch({ type: "writeMemo", field, value: e.target.value })} /></label>)}
+        <label htmlFor="plan-review">{w.review}<input id="plan-review" type="date" autoComplete="off" value={notes ? plan.review : ""} onChange={e => dispatch({ type: "writeMemo", field: "review", value: e.target.value })} /></label>
+      </div>
+      <details className="editor-details plan-choice-change" ref={choicesRef}>
+        <summary>{plan.choice ? w.planChoices[plan.choice] : ja ? "今の考えも記録する（任意）" : "Record a choice as well (optional)"}</summary>
+        {hasPlanDetails && <p className="change-warning">{ja ? "選び直すと、行動のメモと日時などの詳細は消えます。" : "Changing this choice clears the note and its timing details."}</p>}
+        <fieldset className="plan-choices"><legend>{ja ? "今の考えに近いもの" : "What feels right for you"}</legend>
+          {(Object.keys(w.planChoices) as Exclude<PlanChoice, "">[]).map(choice => <label key={choice} className={plan.choice === choice ? "chosen" : ""}>
+            <input type="radio" name="plan-choice" checked={plan.choice === choice} onChange={() => choose(choice)} />{w.planChoices[choice]}
+          </label>)}
+        </fieldset>
+        {plan.choice && <button type="button" className="text-button" onClick={() => choose("")}>{w.noPlan}</button>}
+      </details>
+      <details className="additional-context"><summary>{ja ? "暮らしについても書く" : "Add notes about daily life"}</summary><ContextEditor language={language} session={session} dispatch={dispatch} /></details>
+      <details className="editor-details"><summary>{ja ? "メモの取り扱いについて" : "About recording notes"}</summary><p>{w.privacy}</p><p>{w.consent}</p></details>
     </details>
   </section>;
 }
@@ -256,34 +230,23 @@ export function ConversationDetails({ language, session }: Pick<DialogueProps, "
   const t = copy[language];
   const w = workflowCopy[language];
   const { context, plan } = session;
-  const notes = context.mode === "notes";
   const hasContextNotes = CONTEXT_FIELDS.some(field => context[field].trim());
   const hasPlanDetails = [plan.domain, plan.action, plan.when, plan.support, plan.review].some(value => value.trim());
-  if (!notes) return <section className="summary-section print-only">
-    <h2>{language === "ja" ? "暮らしと、やってみたいこと" : "Daily life and what you would like to do"}</h2>
-    <p>{w.notRecorded}</p>
-  </section>;
+  if (context.mode !== "notes") return <section className="summary-section print-only"><h2>{w.planTitle}</h2><p>{w.notRecorded}</p></section>;
   return <>
-    <section className={`summary-section${notes && hasContextNotes ? "" : " print-only"}`} aria-labelledby="context-summary-title">
-      <p className="eyebrow">02</p><h2 id="context-summary-title">{w.contextTitle}</h2>
-      {notes ? <>
-        <dl className="summary-list">{CONTEXT_FIELDS.map(field => <div key={field} className={context[field].trim() ? undefined : "print-only"}><dt>{w.contextLabels[field]}</dt><dd>{context[field] || w.notEntered}</dd></div>)}</dl>
-      </> : <p>{w.notRecorded}</p>}
+    {hasContextNotes && <section className="summary-section" aria-labelledby="context-summary-title">
+      <h2 id="context-summary-title">{w.contextTitle}</h2>
+      <dl className="summary-list">{CONTEXT_FIELDS.filter(field => context[field].trim()).map(field => <div key={field}><dt>{w.contextLabels[field]}</dt><dd>{context[field]}</dd></div>)}</dl>
       <p className="hint">{w.periodNote}</p>
-    </section>
-    <section className={`summary-section${notes && (plan.choice || hasPlanDetails) ? "" : " print-only"}`} aria-labelledby="plan-summary-title">
-      <p className="eyebrow">03</p><h2 id="plan-summary-title">{w.planTitle}</h2>
+    </section>}
+    {(plan.choice || hasPlanDetails) && <section className="summary-section" aria-labelledby="plan-summary-title">
+      <h2 id="plan-summary-title">{w.planTitle}</h2>
       {session.planNeedsReview && <PlanReviewNotice language={language} />}
-      {notes ? <>
-        <p className="plan-decision">{plan.choice ? w.planChoices[plan.choice] : w.notEntered}</p>
-        {["change", "maintain"].includes(plan.choice) && <>
-          <dl className="summary-list">
-            {plan.domain && <div><dt>{w.choose}</dt><dd>{plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]}</dd></div>}
-            {(["action", "when", "support", "review"] as const).map(field => <div key={field} className={plan[field].trim() ? undefined : "print-only"}><dt>{w[field]}</dt><dd>{plan[field] || w.notEntered}</dd></div>)}
-          </dl>
-        </>}
-      </> : <p>{w.notRecorded}</p>}
-      <p className="hint">{w.reviewNote}</p>
-    </section>
+      {plan.choice && <p className="plan-decision">{w.planChoices[plan.choice]}</p>}
+      <dl className="summary-list">
+        {plan.domain && <div><dt>{w.choose}</dt><dd>{plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]}</dd></div>}
+        {(["action", "when", "support", "review"] as const).filter(field => plan[field].trim()).map(field => <div key={field}><dt>{w[field]}</dt><dd>{plan[field]}</dd></div>)}
+      </dl>
+    </section>}
   </>;
 }

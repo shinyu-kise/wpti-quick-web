@@ -1,9 +1,51 @@
 "use client";
 
-import { SHORT_BOUT_IDEAS, SHORT_BOUT_REFERENCES } from "../lib/short-bouts.ts";
-import type { Language } from "../lib/types.ts";
+import { getActionIdeaGroups, SHORT_BOUT_IDEAS, SHORT_BOUT_REFERENCES } from "../lib/short-bouts.ts";
+import type { Language, QuestionId } from "../lib/types.ts";
+import { domainFeedbackCopy } from "../lib/domain-feedback-copy.ts";
 import type { DialogueSession, DialogueAction } from "../lib/dialogue.ts";
 import type { Dispatch } from "react";
+
+type IdeaProps = {
+  language: Language;
+  session: DialogueSession;
+  dispatch: Dispatch<DialogueAction>;
+  onOpenPlan: () => void;
+};
+
+export function ResultActionIdeas({ language, session, dispatch, onOpenPlan }: IdeaProps) {
+  const ja = language === "ja";
+  const groups = getActionIdeaGroups(session.answers);
+  const canInsert = ["", "change"].includes(session.plan.choice) && !session.plan.action.trim();
+  function useIdea(action: string) {
+    if (!canInsert) return;
+    dispatch({ type: "noteShortBout", value: action });
+    onOpenPlan();
+  }
+  function cards(ids: QuestionId[], other = false) {
+    return <ul className="short-bout-list result-idea-list" data-count={ids.length}>
+      {ids.map(id => {
+        const idea = SHORT_BOUT_IDEAS[language].find(item => item.id === id)!;
+        return <li key={id}>
+          {(ids.length > 1 || other) && <p className="idea-domain">{domainFeedbackCopy[language].names[id]}</p>}
+          <strong>{idea.title}</strong>
+          <p>{idea.action}</p>
+          {canInsert && <button className="secondary-button" type="button" aria-label={`${idea.title}: ${ja ? "この例をメモする" : "Add this idea to a note"}`} onClick={() => useIdea(idea.action)}>{ja ? "この例をメモする" : "Add this idea to a note"}</button>}
+        </li>;
+      })}
+    </ul>;
+  }
+  return <section className="result-action-ideas no-print" aria-labelledby="result-ideas-title">
+    <h2 id="result-ideas-title">{ja ? "行動の例" : "Activity ideas"}</h2>
+    {groups.status === "incomplete" && <p>{ja ? "3つの項目の例です。生活に合うものを選んでください。" : "Here are examples across all three areas. Choose what fits your life."}</p>}
+    {groups.status === "comparable" && groups.primaryIds.length > 1 && <p>{ja ? "見直す候補が複数あります。できそうなものから選べます。" : "There are several areas to reflect on. Start with whichever feels manageable."}</p>}
+    {groups.status === "all-max" && <p className="maintain-message">{ja ? "今の習慣を続けることも選べます。" : "Keeping your current habits is also an option."}</p>}
+    {groups.primaryIds.length > 0 && cards(groups.primaryIds)}
+    {groups.primaryIds.length > 0 && <p className="hint idea-fit-note">{ja ? "時間は一例です。体調や生活に合うものを選んでください。" : "Times are examples. Choose what suits your health and daily life."}</p>}
+    {groups.otherIds.length > 0 && <details className="other-action-ideas"><summary>{groups.status === "all-max" ? ja ? "生活に合わせた行動例を見る" : "See ideas for your daily life" : ja ? "ほかの行動例も見る" : "See other activity ideas"}</summary>{cards(groups.otherIds, true)}{groups.status === "all-max" && <p className="hint">{ja ? "時間は一例です。体調や生活に合うものを選んでください。" : "Times are examples. Choose what suits your health and daily life."}</p>}</details>}
+    {!canInsert && <p className="existing-memo-note">{ja ? "書いたメモはそのまま残っています。" : "Your existing note is kept."} <button className="text-button" type="button" onClick={onOpenPlan}>{ja ? "メモを見る" : "View your note"}</button></p>}
+  </section>;
+}
 
 export function ShortBoutIdeas({ language, session, dispatch, onOpenPlan }: {
   language: Language;
@@ -16,7 +58,7 @@ export function ShortBoutIdeas({ language, session, dispatch, onOpenPlan }: {
 
   function useIdea(action: string) {
     if (!canInsert) return;
-    dispatch({ type: "startShortBout", value: action });
+    dispatch({ type: "noteShortBout", value: action });
     onOpenPlan();
   }
 
@@ -29,8 +71,8 @@ export function ShortBoutIdeas({ language, session, dispatch, onOpenPlan }: {
         <strong>{idea.title}</strong>
         <p>{idea.action}</p>
         <details className="idea-details"><summary>{ja ? "補足を見る" : "More about this idea"}</summary><p className="hint">{idea.context}</p></details>
-        {canInsert && <button className="secondary-button" type="button" aria-label={`${idea.title}: ${ja ? "これを選ぶ" : "Choose this idea"}`} onClick={() => useIdea(idea.action)}>
-          {ja ? "これを選ぶ" : "Choose this idea"}
+        {canInsert && <button className="secondary-button" type="button" aria-label={`${idea.title}: ${ja ? "この例をメモする" : "Add this idea to a note"}`} onClick={() => useIdea(idea.action)}>
+          {ja ? "この例をメモする" : "Add this idea to a note"}
         </button>}
       </li>)}
     </ul>

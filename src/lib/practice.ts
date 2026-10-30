@@ -9,9 +9,9 @@ import { domainFeedbackCopy, domainFeedbackMessage } from "./domain-feedback-cop
 
 export { emptyPlan } from "./dialogue.ts";
 export type { ActionPlan } from "./dialogue.ts";
-export const WEB_VERSION = "1.9.0-dialogue-rc.1";
+export const WEB_VERSION = "1.9.1-dialogue-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
-export const DIALOGUE_VERSION = "1.4-prototype";
+export const DIALOGUE_VERSION = "1.5-prototype";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
 
 // Recall support only: no conversion to response categories or score thresholds.
@@ -40,6 +40,17 @@ export function buildSummary(session: DialogueSession, language: Language, date:
   const feedbackCopy = domainFeedbackCopy[language];
   const { context, plan } = session;
   const notes = context.mode === "notes";
+  const contextLines = CONTEXT_FIELDS
+    .filter(field => context[field].trim())
+    .map(field => `${w.contextLabels[field]}: ${context[field]}`);
+  const planLines = [
+    ...(plan.choice ? [w.planChoices[plan.choice]] : []),
+    ...(session.planNeedsReview ? [w.planReviewPending] : []),
+    ...(plan.domain ? [`${w.choose}: ${plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]}`] : []),
+    ...(["action", "when", "support", "review"] as const)
+      .filter(field => plan[field].trim())
+      .map(field => `${w[field]}: ${plan[field]}`)
+  ];
   return [
     `WPTI-Quick v${INSTRUMENT_VERSION} / Dialogue v${DIALOGUE_VERSION} / Web v${WEB_VERSION}`,
     session.demo ? w.example : "",
@@ -56,21 +67,11 @@ export function buildSummary(session: DialogueSession, language: Language, date:
     feedbackCopy.limitation,
     "",
     w.contextTitle,
-    ...(notes ? CONTEXT_FIELDS.map(field => `${w.contextLabels[field]}: ${context[field] || w.notEntered}`) : [w.notRecorded]),
+    ...(notes && contextLines.length ? contextLines : [w.notRecorded]),
     w.periodNote,
     "",
     w.planTitle,
-    ...(notes ? [
-      plan.choice ? w.planChoices[plan.choice] : w.notEntered,
-      session.planNeedsReview ? w.planReviewPending : "",
-      ...(["change", "maintain"].includes(plan.choice) ? [
-        ...(plan.domain ? [`${w.choose}: ${plan.domain === "other" ? w.otherDomain : t.domainLabels[plan.domain]}`] : []),
-        `${w.action}: ${plan.action || w.notEntered}`,
-        `${w.when}: ${plan.when || w.notEntered}`,
-        `${w.support}: ${plan.support || w.notEntered}`,
-        `${w.review}: ${plan.review || w.notEntered}`
-      ] : [])
-    ] : [w.notRecorded]),
+    ...(notes && planLines.length ? planLines : [w.notRecorded]),
     "",
     result ? `${language === "ja" ? "参考点（Quick v1.0）" : "Reference total (Quick v1.0)"}: ${result.total}/100` : w.scoreUnavailable,
     w.referenceNote,

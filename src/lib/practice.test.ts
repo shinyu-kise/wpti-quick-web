@@ -36,7 +36,7 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.4-prototype \/ Web v1.9.0-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.5-prototype \/ Web v1.9.1-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
@@ -77,6 +77,63 @@ test("optional notes and participant-selected plan export without a legacy revie
     assert.doesNotMatch(summary, /架空の回答|fictional responses/);
   }
   assert.equal(referenceScore(session.answers)?.total, 60);
+});
+
+test("an unclassified memo exports without blank fields and survives answer correction with an explicit review notice", () => {
+  const before: DialogueSession = { ...createSession(), answers: activeButSitting };
+  const written = dialogueReducer(before, { type: "writeMemo", value: "仕事の後や休日に、できそうなことを考える" });
+  assert.equal(written.plan.choice, "");
+  assert.equal(referenceScore(written.answers)?.total, referenceScore(before.answers)?.total);
+  const corrected = dialogueReducer(written, { type: "answer", questionId: "leisure", optionId: "leisure_31_90" });
+  const edited = dialogueReducer(corrected, { type: "writeMemo", value: "仕事の後や休日に、歩けそうな時間を考える" });
+  assert.equal(edited.planNeedsReview, true);
+  const acknowledged = dialogueReducer(edited, { type: "acknowledgePlanReview" });
+  for (const language of ["ja", "en"] as const) {
+    const w = workflowCopy[language];
+    const summary = buildSummary(written, language, "2026-10-30");
+    assert.ok(summary.includes(`${w.action}: ${written.plan.action}`));
+    assert.ok(!summary.includes(w.notEntered));
+    assert.match(summary, /60\/100/);
+    for (const field of ["when", "support", "review"] as const) {
+      assert.ok(!summary.split("\n").some(line => line.startsWith(`${w[field]}:`)));
+    }
+    const updatedSummary = buildSummary(edited, language, "2026-10-30");
+    assert.ok(updatedSummary.includes(edited.plan.action));
+    assert.ok(updatedSummary.includes(w.planReviewPending));
+    assert.match(updatedSummary, /40\/100/);
+    const reviewedSummary = buildSummary(acknowledged, language, "2026-10-30");
+    assert.ok(reviewedSummary.includes(edited.plan.action));
+    assert.ok(!reviewedSummary.includes(w.planReviewPending));
+  }
+});
+
+test("memos export with retained choices and details but cleared text never reappears", () => {
+  for (const choice of ["maintain", "none"] as const) {
+    let session: DialogueSession = { ...createSession(), answers: activeButSitting };
+    session = dialogueReducer(session, { type: "contextMode", mode: "notes" });
+    session = dialogueReducer(session, { type: "planChoice", choice });
+    session = dialogueReducer(session, { type: "writeMemo", value: "TEMPORARY_MEMO_TO_CLEAR" });
+    session = dialogueReducer(session, { type: "writeMemo", field: "when", value: "After work on Friday" });
+    const erased = dialogueReducer(session, { type: "writeMemo", value: "" });
+    const cleared = dialogueReducer(session, { type: "contextMode", mode: "talk-only" });
+    const reset = dialogueReducer(session, { type: "reset" });
+    for (const language of ["ja", "en"] as const) {
+      const w = workflowCopy[language];
+      const summary = buildSummary(session, language, "2026-10-30");
+      assert.ok(summary.includes(w.planChoices[choice]));
+      assert.ok(summary.includes(`${w.action}: TEMPORARY_MEMO_TO_CLEAR`));
+      assert.ok(summary.includes(`${w.when}: After work on Friday`));
+      const erasedSummary = buildSummary(erased, language, "2026-10-30");
+      assert.ok(!erasedSummary.includes("TEMPORARY_MEMO_TO_CLEAR"));
+      assert.ok(erasedSummary.includes("After work on Friday"));
+      assert.ok(erasedSummary.includes(w.planChoices[choice]));
+      for (const state of [cleared, reset]) {
+        const clearedSummary = buildSummary(state, language, "2026-10-30");
+        assert.ok(!clearedSummary.includes("TEMPORARY_MEMO_TO_CLEAR"));
+        assert.ok(!clearedSummary.includes("After work on Friday"));
+      }
+    }
+  }
 });
 
 test("changed context exports the retained plan with a review label until explicitly acknowledged in both languages", () => {
@@ -167,8 +224,8 @@ test("equal 60-point totals export distinct item scores and different reflection
     { answers: { leisure: "leisure_91_150", transport: "transport_0_30", sedentary: "sedentary_3_or_less" }, points: [20, 0, 40], focus: 1 }
   ] as const;
   const names = {
-    ja: ["自由な時間の運動", "歩きや自転車での移動", "座る・横になる時間"],
-    en: ["Leisure activity", "Walking or cycling for travel", "Sitting or lying down"]
+    ja: ["余暇・運動での身体活動", "歩きや自転車での移動", "座る・横になる時間"],
+    en: ["Leisure and exercise physical activity", "Walking or cycling for travel", "Sitting or lying down"]
   };
   const maxima = [30, 30, 40];
 
@@ -195,14 +252,14 @@ test("partial exports distinguish a scored zero from unsure, declined and unansw
       const summary = buildSummary(session, language, "2026-10-30");
       const lines = summary.split("\n");
       if (language === "ja") {
-        assert.ok(lines.includes("自由な時間の運動: 0/30点"));
+        assert.ok(lines.includes("余暇・運動での身体活動: 0/30点"));
         assert.ok(lines.includes("歩きや自転車での移動: 点数なし"));
         assert.ok(lines.includes("座る・横になる時間: 点数なし"));
         assert.ok(lines.includes("選ばれた時間だけでは、3つを比べられません。"));
         assert.ok(summary.includes(nonresponse === "unsure" ? "わからない" : "答えない"));
         assert.ok(summary.includes("未回答"));
       } else {
-        assert.ok(lines.includes("Leisure activity: 0/30 pts"));
+        assert.ok(lines.includes("Leisure and exercise physical activity: 0/30 pts"));
         assert.ok(lines.includes("Walking or cycling for travel: Not scored"));
         assert.ok(lines.includes("Sitting or lying down: Not scored"));
         assert.ok(lines.includes("The selected times are not enough to compare all three areas."));
@@ -223,10 +280,10 @@ test("all-maximum export shows three full item scores without inventing a low do
     assert.match(summary, /100\/100/);
     assert.deepEqual(lines.filter(line => /^(見直す候補：|Area to reflect on: )/.test(line)), []);
     if (language === "ja") {
-      for (const expected of ["自由な時間の運動: 30/30点", "歩きや自転車での移動: 30/30点", "座る・横になる時間: 40/40点", "3つとも、この採点では満点です。", "点数だけで、健康上の不足は判断できません。"]) assert.ok(lines.includes(expected));
+      for (const expected of ["余暇・運動での身体活動: 30/30点", "歩きや自転車での移動: 30/30点", "座る・横になる時間: 40/40点", "3つとも、この採点では満点です。", "点数だけで、健康上の不足は判断できません。"]) assert.ok(lines.includes(expected));
       assert.doesNotMatch(summary, /不足なし|健康です/);
     } else {
-      for (const expected of ["Leisure activity: 30/30 pts", "Walking or cycling for travel: 30/30 pts", "Sitting or lying down: 40/40 pts", "All three responses receive the maximum points in this scoring system.", "Scores alone cannot establish a health-related deficiency."]) assert.ok(lines.includes(expected));
+      for (const expected of ["Leisure and exercise physical activity: 30/30 pts", "Walking or cycling for travel: 30/30 pts", "Sitting or lying down: 40/40 pts", "All three responses receive the maximum points in this scoring system.", "Scores alone cannot establish a health-related deficiency."]) assert.ok(lines.includes(expected));
       assert.doesNotMatch(summary, /You are healthy|No health deficiencies/);
     }
   }

@@ -38,7 +38,7 @@ export function Assessment({ language, session, hasDownstream, selectAnswer, sel
       <legend className="sr-only">{u.questionTitles[question.id]}</legend>
       <h2 className="question-heading" tabIndex={-1}><span className="question-number" aria-hidden="true">{index + 1}</span><span className="question-title">{u.questionTitles[question.id]}</span></h2>
       <span className="sr-only" id={`${question.id}-recall`}>{u.recall}</span>
-      {question.id === "leisure" && <p className="intensity-note" id="leisure-intensity">{ja ? "息が少し弾む程度以上の運動など" : "At least light breathlessness"}</p>}
+      {question.id === "leisure" && <p className="intensity-note" id="leisure-intensity">{ja ? "自由な時間に行う、息が少し弾む程度以上の活動を数えます。" : "Count activities in your free time involving at least light breathlessness."}</p>}
       <p className="question-unit" id={`${question.id}-unit`}>{u.questionUnits[question.id]}</p>
       <p className="question-example" id={`${question.id}-example`}>{question.id === "sedentary"
         ? ja ? "寝ている時間は入れません。" : "Do not include sleep."

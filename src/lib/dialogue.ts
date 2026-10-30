@@ -43,8 +43,10 @@ export type DialogueAction =
   | { type: "planChoice"; choice: PlanChoice }
   | { type: "planDomain"; domain: ActionPlan["domain"] }
   | { type: "planField"; field: "action" | "when" | "support" | "review"; value: string }
+  | { type: "writeMemo"; field?: "action" | "when" | "support" | "review"; value: string }
   | { type: "insertShortBout"; value: string }
   | { type: "startShortBout"; value: string }
+  | { type: "noteShortBout"; value: string }
   | { type: "reset" }
   | { type: "example" };
 
@@ -105,6 +107,21 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
     case "planField":
       if (session.context.mode !== "notes" || !["change", "maintain"].includes(session.plan.choice)) return session;
       return { ...session, plan: { ...session.plan, [action.field]: action.value } };
+    case "writeMemo": {
+      const field = action.field ?? "action";
+      if (!session.plan[field] && !action.value.trim()) return session;
+      if (session.context.mode === "notes" && session.plan[field] === action.value) return session;
+      // Writing is an explicit request to record a note, not a choice to
+      // change habits. Keep context, choices, details and pending review;
+      // only an entirely cleared plan no longer needs review.
+      const plan = { ...session.plan, [field]: action.value };
+      return {
+        ...session,
+        context: { ...session.context, mode: "notes" },
+        plan,
+        planNeedsReview: Object.values(plan).some(value => value.trim()) && session.planNeedsReview
+      };
+    }
     case "insertShortBout":
       // Recheck the current state atomically: a stale or repeated suggestion
       // click must never overwrite the participant's action or select a plan.
@@ -119,6 +136,15 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
         ...session,
         context: { ...session.context, mode: "notes" },
         plan: { ...session.plan, choice: "change", action: action.value }
+      };
+    case "noteShortBout":
+      // Copying an example to a note does not decide to change habits.
+      // Preserve any prior choice/details and reject stale or repeated clicks.
+      if (!["", "change"].includes(session.plan.choice) || session.plan.action.trim() || !action.value.trim()) return session;
+      return {
+        ...session,
+        context: { ...session.context, mode: "notes" },
+        plan: { ...session.plan, action: action.value }
       };
   }
 }
