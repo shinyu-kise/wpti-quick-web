@@ -35,7 +35,7 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.1-prototype \/ Web v1.5.1-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.1-prototype \/ Web v1.6.0-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);

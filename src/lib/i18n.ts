@@ -89,7 +89,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "ポリシー"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.5.1-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.6.0-dialogue-rc.1",
       start: "生活行動から話し始める",
       restart: "入力をすべて消す",
       print: "印刷 / PDF保存",
@@ -98,7 +98,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "100点満点"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.5.1-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.6.0-dialogue-rc.1",
       title: "動く・移動する・座る。暮らしを振り返り、次の一歩へ。",
       body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。本人と理学療法士などの専門職が一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
     },
@@ -219,7 +219,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "Policy"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.5.1-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.6.0-dialogue-rc.1",
       start: "Start with daily behavior",
       restart: "Clear all inputs",
       print: "Print / Save as PDF",
@@ -228,7 +228,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "out of 100"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.5.1-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.6.0-dialogue-rc.1",
       title: "Move, travel, sit. Reflect on daily life. Choose a next step.",
       body: "Explore leisure and transport activity and sedentary time with three questions. Use the results together with a physiotherapist or other professional to reflect on daily life and choose a manageable next step."
     },

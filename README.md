@@ -1,4 +1,4 @@
-# WPTI-Quick Web 1.5.1-dialogue-rc.1
+# WPTI-Quick Web 1.6.0-dialogue-rc.1
 
 A **dialogue-support prototype**. All three original questions appear on one page, followed immediately by the response summary. Optional life-context discussion and participant-chosen next-step notes are available on that same summary page. Japanese and English are supported.
 

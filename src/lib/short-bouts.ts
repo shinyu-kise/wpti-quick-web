@@ -54,6 +54,7 @@ export const SHORT_BOUT_IDEAS: Record<Language, readonly ShortBoutIdea[]> = {
 
 export const SHORT_BOUT_REFERENCES = [
   { url: "https://pubmed.ncbi.nlm.nih.gov/33239350/", label: "Bull et al. (2020), WHO guidelines" },
-  { url: "https://pubmed.ncbi.nlm.nih.gov/29567764/", label: "Saint-Maurice et al. (2018), activity bouts and mortality" },
-  { url: "https://pubmed.ncbi.nlm.nih.gov/36482104/", label: "Stamatakis et al. (2022), brief vigorous activity" }
+  { url: "https://pubmed.ncbi.nlm.nih.gov/29567764/", label: "Saint-Maurice et al. (2018), moderate-to-vigorous activity bouts and mortality" },
+  { url: "https://pubmed.ncbi.nlm.nih.gov/36482104/", label: "Stamatakis et al. (2022), VILPA and mortality" },
+  { url: "https://pubmed.ncbi.nlm.nih.gov/22374636/", label: "Dunstan et al. (2012), walking breaks and post-meal glucose and insulin" }
 ] as const;

@@ -21,6 +21,8 @@ test("activity suggestions are independent of the original Quick scoring table",
   assert.equal(OPTION_SCORES.transport_151_plus.points, 30);
   assert.equal(OPTION_SCORES.sedentary_8_plus.points, 0);
   assert.equal(OPTION_SCORES.sedentary_3_or_less.points, 40);
-  assert.equal(SHORT_BOUT_REFERENCES.length, 3);
+  for (const pmid of ["33239350", "29567764", "36482104", "22374636"]) {
+    assert.ok(SHORT_BOUT_REFERENCES.some(reference => reference.url === `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`));
+  }
   assert.ok(SHORT_BOUT_REFERENCES.every(reference => reference.url.startsWith("https://pubmed.ncbi.nlm.nih.gov/")));
 });

@@ -1390,3 +1390,8 @@ button, input, textarea { font: inherit; }
   .short-bout-guide { padding: 14px; }
   .short-bout-list { grid-template-columns: minmax(0, 1fr); }
 }
+
+@media print {
+  .summary-section { break-inside: avoid-page; }
+  .summary-section > .eyebrow { break-after: avoid-page; }
+}
