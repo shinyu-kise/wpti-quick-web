@@ -33,17 +33,17 @@ export function RecallHelp({ id, language }: { id: QuestionId; language: Languag
       <h3>{w.intervalTitle}</h3>
       <p className="hint">{w.intervalNote}</p>
     </>}
-    {id !== "sedentary" && <details className="editor-details recall-calculator">
-      <summary>{w.calcTitle}</summary>
+    {id !== "sedentary" && <div className="recall-calculator">
+      <h3>{w.calcTitle}</h3>
       <div className="recall-fields">
-        <label htmlFor={`${id}-days`}>{w.days}<input id={`${id}-days`} type="number" min="0" max="7" step="1" autoComplete="off" value={days} onChange={e => setDays(e.target.value)} /></label>
+        <label htmlFor={`${id}-days`}>{w.days}<input id={`${id}-days`} type="number" inputMode="numeric" min="0" max="7" step="1" autoComplete="off" value={days} onChange={e => setDays(e.target.value)} /></label>
         <span aria-hidden="true">×</span>
-        <label htmlFor={`${id}-minutes`}>{w.minutes}<input id={`${id}-minutes`} type="number" min="0" max="1440" step="any" autoComplete="off" value={minutes} onChange={e => setMinutes(e.target.value)} /></label>
+        <label htmlFor={`${id}-minutes`}>{w.minutes}<input id={`${id}-minutes`} type="number" inputMode="decimal" min="0" max="1440" step="any" autoComplete="off" value={minutes} onChange={e => setMinutes(e.target.value)} /></label>
         <output aria-live="polite">{w.total}: <strong>{total === null ? "—" : total}</strong> {language === "ja" ? "分" : "min"}</output>
       </div>
       {days && minutes && total === null && <p role="alert" className="validation-message">{w.invalid}</p>}
       <p className="hint">{w.calcNote}</p>
-    </details>}
+    </div>}
   </div>;
 }
 
@@ -75,10 +75,10 @@ function RecordingPrivacy({ language }: { language: Language }) {
   const w = workflowCopy[language];
   return <div className="recording-privacy">
     <p className="privacy-brief">{language === "ja"
-      ? "名前などは入力しないでください。メモは自動送信・自動保存されません。再読み込みで消えます。誰かと使う場合は、記録してよい内容を本人と確認してください。"
-      : "Do not enter names or other identifying details. Notes are not sent or saved automatically. Reloading clears them. If using this with someone else, agree what may be recorded."}</p>
+      ? "名前は書かないでください。メモは自動では保存・送信されません。"
+      : "Do not enter names. Notes are not saved or sent automatically."}</p>
     <details className="editor-details record-information">
-      <summary>{language === "ja" ? "記録と個人情報について" : "Notes and privacy"}</summary>
+      <summary>{language === "ja" ? "メモを書く前に" : "Before writing notes"}</summary>
       <p>{w.privacy}</p>
       <p>{w.consent}</p>
     </details>
@@ -90,8 +90,8 @@ function PlanReviewNotice({ language, onConfirm }: { language: Language; onConfi
   return <div className="notice plan-review-notice" role="status">
     <p>{w.planReviewPending}</p>
     {onConfirm && <button className="secondary-button" type="button" onClick={onConfirm}>{language === "ja"
-      ? "次の一歩を確認した"
-      : "I have reviewed the next step"}</button>}
+      ? "メモを確認しました"
+      : "I have checked my note"}</button>}
   </div>;
 }
 
@@ -121,18 +121,18 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
     </div>;
   }
   return <section className="dialogue-editor" aria-label={w.contextTitle} ref={editorRef}>
-    <p className="editor-intro">{language === "ja" ? "必要なことだけ振り返りましょう。誰かと使う場合は、話したい範囲で構いません。" : "Reflect on what is useful. If using this with someone else, share only what you wish to discuss."}</p>
+    <p className="editor-intro">{language === "ja" ? "書きたいことだけで構いません。" : "Write only what you wish to record."}</p>
     {session.context.mode === "notes" ? <>
       <RecordingPrivacy language={language} />
       {hasPlanData && <p className="change-warning">{w.contextReset}</p>}
       <div className="context-fields context-primary">{contextField("sitting")}</div>
       <details className="editor-details context-more">
-        <summary>{language === "ja" ? "ほかの生活背景もメモする（任意）" : "Add other life circumstances (optional)"}</summary>
+        <summary>{language === "ja" ? "ほかに書いておきたいこと" : "Other things to note"}</summary>
         <p className="hint">{w.contextIntro}</p>
         <div className="context-fields">{otherFields.map(contextField)}</div>
       </details>
       <button className="text-button" type="button" onClick={() => changeMode("talk-only")}>{language === "ja"
-        ? "背景・計画のメモを消して、入力せずに使う"
+        ? "書いたメモをすべて消す"
         : "Clear context and plan notes and continue without recording"}</button>
     </> : <>
       <div className="talk-prompts">
@@ -145,16 +145,18 @@ export function ContextEditor({ language, session, dispatch }: DialogueProps) {
         </details>
       </div>
       <button className="secondary-button enable-notes" type="button" onClick={() => changeMode("notes")}>{language === "ja"
-        ? "生活背景をメモする"
+        ? "暮らしについてメモする"
         : "Add notes about daily life"}</button>
     </>}
   </section>;
 }
 
-export function PlanEditor({ language, session, dispatch }: DialogueProps) {
+export function PlanEditor({ language, session, dispatch, onDone }: DialogueProps & { onDone?: () => void }) {
   const planRef = useRef<HTMLElement>(null);
+  const choicesRef = useRef<HTMLDetailsElement>(null);
   const focusAfterReview = useRef(false);
   const focusAfterNotes = useRef(false);
+  const focusAfterChoice = useRef(false);
   useEffect(() => {
     if (session.context.mode === "notes" && focusAfterNotes.current) {
       focusAfterNotes.current = false;
@@ -164,44 +166,61 @@ export function PlanEditor({ language, session, dispatch }: DialogueProps) {
   useEffect(() => {
     if (!session.planNeedsReview && focusAfterReview.current) {
       focusAfterReview.current = false;
-      (planRef.current?.querySelector<HTMLElement>('input:checked') ?? planRef.current)?.focus();
+      (planRef.current?.querySelector<HTMLElement>('#plan-action') ?? planRef.current?.querySelector<HTMLElement>('.plan-complete button') ?? planRef.current)?.focus();
     }
   }, [session.planNeedsReview]);
+  useEffect(() => {
+    if (!focusAfterChoice.current) return;
+    focusAfterChoice.current = false;
+    (planRef.current?.querySelector<HTMLElement>(session.plan.choice ? '#plan-action, .plan-complete button' : 'input[name="plan-choice"]') ?? planRef.current)?.focus();
+  }, [session.plan.choice]);
   const w = workflowCopy[language];
   const plan = session.plan;
   const hasPlan = ["change", "maintain"].includes(plan.choice);
   const hasPlanDetails = [plan.domain, plan.action, plan.when, plan.support, plan.review].some(Boolean);
-  const changeWarning = language === "ja" ? "方針を変えると、記入済みの計画は消えます。" : "Changing the choice clears the plan details already entered.";
+  const changeWarning = language === "ja" ? "選び直すと、ここに書いたメモは消えます。" : "Choosing something else clears the plan details entered here.";
+  function choose(choice: PlanChoice) {
+    focusAfterChoice.current = true;
+    dispatch({ type: "planChoice", choice });
+    if (choicesRef.current) choicesRef.current.open = false;
+  }
+  const choices = <fieldset className="plan-choices">
+    <legend>{language === "ja" ? "今の気持ちに近いものを選んでください" : "Choose what feels right for you"}</legend>
+    {(Object.keys(w.planChoices) as Exclude<PlanChoice, "">[]).map(choice => <label key={choice} className={plan.choice === choice ? "chosen" : ""}>
+      <input type="radio" name="plan-choice" checked={plan.choice === choice} onChange={() => choose(choice)} />
+      {w.planChoices[choice]}
+    </label>)}
+  </fieldset>;
+  const doneButton = onDone && <div className="plan-complete"><button className="primary-button" type="button" onClick={onDone}>{language === "ja" ? "これで終わる" : "Done"}</button></div>;
   return <section className="action-plan" aria-label={w.planTitle} tabIndex={-1} ref={planRef}>
-    <p className="editor-intro">{language === "ja" ? "小さく変える、続ける、今は決めない。自分に合うものを選びましょう。" : "Make a small change, keep going, or decide later. The choice is yours."}</p>
     {session.planNeedsReview && <PlanReviewNotice language={language} onConfirm={() => { focusAfterReview.current = true; dispatch({ type: "acknowledgePlanReview" }); }} />}
     {session.context.mode !== "notes" ? <>
       <p className="talk-status">{w.notRecorded}</p>
-      <div className="talk-prompt"><h3>{language === "ja" ? "いまの希望に近いものは？" : "What feels right for you now?"}</h3></div>
+      <div className="talk-prompt"><h3>{language === "ja" ? "今の気持ちに近いものは？" : "What feels right for you now?"}</h3></div>
       <ul className="talk-choice-list">{Object.values(w.planChoices).map(label => <li key={label}>{label}</li>)}</ul>
-      <p className="hint">{language === "ja" ? "上の項目をヒントに考えてみましょう。メモする場合は、下のボタンから進めます。" : "Use these options to consider what feels right. To record a choice, open the fields below."}</p>
       <button className="secondary-button enable-plan-notes" type="button" onClick={() => {
         focusAfterNotes.current = true;
         dispatch({ type: "contextMode", mode: "notes" });
-      }}>{language === "ja" ? "次の一歩を入力する" : "Enter a next step"}</button>
+      }}>{language === "ja" ? "メモを書く" : "Write a note"}</button>
+      {doneButton}
     </> : <>
-      {hasPlanDetails && <p className="change-warning">{changeWarning}</p>}
-      <p className="hint">{language === "ja" ? "「小さな変更を試す」「今できていることを続ける」を選ぶと、メモを記入できます。" : "Choose ‘Try a small change’ or ‘Maintain what is working’ to enter a note."}</p>
-      <fieldset className="plan-choices">
-        <legend>{language === "ja" ? "選んだ方針（任意）" : "Your choice (optional)"}</legend>
-        {(Object.keys(w.planChoices) as Exclude<PlanChoice, "">[]).map(choice => <label key={choice} className={plan.choice === choice ? "chosen" : ""}>
-          <input type="radio" name="plan-choice" checked={plan.choice === choice} onChange={() => dispatch({ type: "planChoice", choice })} />
-          {w.planChoices[choice]}
-        </label>)}
-      </fieldset>
-      {plan.choice && <button type="button" className="text-button" onClick={() => dispatch({ type: "planChoice", choice: "" })}>{w.noPlan}</button>}
+      {plan.choice ? <p className="plan-current-choice">{w.planChoices[plan.choice]}</p> : choices}
       {hasPlan && <>
         <RecordingPrivacy language={language} />
         <div className="plan-fields plan-primary">
           <label htmlFor="plan-action">{w.action}<textarea id="plan-action" rows={3} maxLength={500} autoComplete="off" value={plan.action} onChange={e => dispatch({ type: "planField", field: "action", value: e.target.value })} /></label>
         </div>
+      </>}
+      {doneButton}
+      {plan.choice && <details className="editor-details plan-choice-change" ref={choicesRef}>
+        <summary>{language === "ja" ? "選び直す" : "Change my choice"}</summary>
+        {hasPlanDetails && <p className="change-warning">{changeWarning}</p>}
+        {choices}
+        <button type="button" className="text-button" onClick={() => choose("")}>{w.noPlan}</button>
+      </details>}
+      {hasPlan && <>
         <details className="editor-details plan-more">
-          <summary>{language === "ja" ? "いつ・支援・振り返り日を加える（任意）" : "Add timing, support or a review date (optional)"}</summary>
+          <summary>{language === "ja" ? "いつやるかなど、詳しく書く" : "Add details, such as when to do it"}</summary>
           <div className="plan-fields">
             {(["when", "support"] as const).map(field => <label key={field} htmlFor={`plan-${field}`}>{w[field]}<textarea id={`plan-${field}`} rows={2} maxLength={500} autoComplete="off" value={plan[field]} onChange={e => dispatch({ type: "planField", field, value: e.target.value })} /></label>)}
             <label htmlFor="plan-review">{w.review}<input id="plan-review" type="date" autoComplete="off" value={plan.review} onChange={e => dispatch({ type: "planField", field: "review", value: e.target.value })} /></label>
@@ -210,7 +229,7 @@ export function PlanEditor({ language, session, dispatch }: DialogueProps) {
       </>}
     </>}
     <details className="editor-details plan-guidance">
-      <summary>{language === "ja" ? "選ぶとき・振り返るときのヒント" : "Tips for choosing and reviewing"}</summary>
+      <summary>{language === "ja" ? "何を書くか迷ったら" : "If you are unsure what to write"}</summary>
       <p>{w.planIntro}</p>
       <p>{w.personalized}</p>
       <p>{w.reviewNote}</p>
@@ -226,7 +245,7 @@ export function ConversationDetails({ language, session }: Pick<DialogueProps, "
   const hasContextNotes = CONTEXT_FIELDS.some(field => context[field].trim());
   const hasPlanDetails = [plan.domain, plan.action, plan.when, plan.support, plan.review].some(value => value.trim());
   if (!notes) return <section className="summary-section print-only">
-    <h2>{language === "ja" ? "生活背景・次の一歩" : "Daily life and next step"}</h2>
+    <h2>{language === "ja" ? "暮らしと、やってみたいこと" : "Daily life and what you would like to do"}</h2>
     <p>{w.notRecorded}</p>
   </section>;
   return <>

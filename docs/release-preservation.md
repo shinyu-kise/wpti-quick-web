@@ -67,3 +67,10 @@ See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction chang
 - Preservation branch: `archive/web-v1.6.1-before-usability-20261030`.
 - Web 1.7.0 / Dialogue 1.2 improves solo-use wording, direct plan entry, plain-language headings, visible category-gap guidance and preservation of notes after answer corrections. Quick v1.0 scoring, options and source questions remain unchanged.
 - The author requested all five changes on 2026-10-30. See [design and scope](design-1.7.0.md). Source preservation is distinct from deployment verification.
+
+## Web 1.7.0 preserved before the short reading flow
+
+- Previous production source: `e00a2ec8db0e65eee8eb63fbea34c984818c2cff`.
+- Preservation branch: `archive/web-v1.7.0-before-simple-flow-20261030`.
+- Web 1.8.0 / Dialogue 1.3 adds a one-question narrow-screen flow, explicit completion, separate optional notes and simpler Japanese. Quick v1.0 is unchanged.
+- Requested by the author on 2026-10-30; see [design and validation limits](design-1.8.0.md). Publication authorization and preservation follow the preceding releases; deployment success is verified separately.

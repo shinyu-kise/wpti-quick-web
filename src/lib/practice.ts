@@ -7,9 +7,9 @@ import { workflowCopy } from "./workflow-copy.ts";
 
 export { emptyPlan } from "./dialogue.ts";
 export type { ActionPlan } from "./dialogue.ts";
-export const WEB_VERSION = "1.7.0-dialogue-rc.1";
+export const WEB_VERSION = "1.8.0-dialogue-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
-export const DIALOGUE_VERSION = "1.2-prototype";
+export const DIALOGUE_VERSION = "1.3-prototype";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
 
 // Recall support only: no conversion to response categories or score thresholds.
