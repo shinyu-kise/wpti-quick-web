@@ -18,3 +18,9 @@ The suggested five-minute, two-to-five-minute, and one-to-two-minute activities 
 ## Review boundary
 
 This is a bounded check of the cited primary sources and their correspondence to the new text, not a systematic evidence review. Browser, privacy, scoring regression, print, CI and production checks are recorded separately by the release reviewer.
+
+## User-requested wording refinement, 2026-10-30
+
+The Japanese and English WHO paragraph now explicitly states both boundaries: light walking or standing cannot be counted directly toward the moderate-to-vigorous activity duration, while reducing sedentary time and replacing it with light activity also has health benefits. This follows the [WHO recommendations](https://www.ncbi.nlm.nih.gov/books/NBK566046/); it does not turn the examples into validated doses or equate light activity with VILPA.
+
+The final evidence paragraph now distinguishes validity findings reported in the [original WPTI paper, PMID 41606948](https://pubmed.ncbi.nlm.nih.gov/41606948/) from the separate categorical WPTI-Quick instrument. Quick-specific validity, test–retest reliability, responsiveness and the feature's behavioral and health effects remain future evaluation tasks. This statement neither independently validates the published findings nor implies numerical equivalence or transfers the original instrument's properties to Quick. The four activity references, Quick v1.0 items, response categories, scoring and score interpretation remain unchanged.
