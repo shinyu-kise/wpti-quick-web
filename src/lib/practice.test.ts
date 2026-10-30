@@ -36,11 +36,11 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.2-prototype \/ Web v1.7.0-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.3-prototype \/ Web v1.8.0-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
-    assert.match(summary, language === "ja" ? /原著WPTIと同一ではありません/ : /not equivalent to the original WPTI/);
+    assert.match(summary, language === "ja" ? /原著WPTIとは別のものです/ : /not equivalent to the original WPTI/);
     assert.doesNotMatch(summary, /35–59|60点以上|60 points or higher/);
   }
 });
@@ -52,8 +52,8 @@ test("incomplete answers export with distinct nonresponse states and never an im
   for (const language of ["ja", "en"] as const) {
     const summary = buildSummary(session, language, "2026-10-23");
     assert.doesNotMatch(summary, /\d+\/100/);
-    assert.match(summary, language === "ja" ? /わからない・区分で迷う/ : /Unsure \/ between categories/);
-    assert.match(summary, language === "ja" ? /答えにくい・回答しない/ : /Difficult to answer \/ prefer not to answer/);
+    assert.ok(summary.includes(workflowCopy[language].nonresponses.unsure));
+    assert.ok(summary.includes(workflowCopy[language].nonresponses.unable));
     assert.match(summary, language === "ja" ? /未回答/ : /Unanswered/);
   }
 });
@@ -72,7 +72,7 @@ test("optional notes and participant-selected plan export without a legacy revie
   for (const language of ["ja", "en"] as const) {
     const summary = buildSummary(session, language, "2026-10-23");
     for (const text of ["会議で長く座る\n日によって違う", "最近の生活", "休息の時間を大切にする", "無理がある日は休む", "2026-11-09"]) assert.ok(summary.includes(text));
-    assert.match(summary, language === "ja" ? /今できていることを続ける/ : /Maintain what is working/);
+    assert.ok(summary.includes(workflowCopy[language].planChoices.maintain));
     assert.match(summary, /60\/100/);
     assert.doesNotMatch(summary, /架空の回答|fictional responses/);
   }
@@ -135,7 +135,7 @@ test("the immediate response summary describes unselected notes as unrecorded wi
   assert.equal(session.context.mode, "");
   for (const language of ["ja", "en"] as const) {
     const summary = buildSummary(session, language, "2026-10-23");
-    const unrecorded = language === "ja" ? "背景・計画の記録なし" : "No context or plan details recorded";
+    const unrecorded = workflowCopy[language].notRecorded;
     assert.equal(summary.split("\n").filter(line => line === unrecorded).length, 2);
     assert.doesNotMatch(summary, /話すだけ|Talk only|再確認待ち|awaiting review/);
     assert.match(summary, /60\/100/);
@@ -155,7 +155,7 @@ test("unselected and talk-only exports exclude stale context, plan and review st
     for (const language of ["ja", "en"] as const) {
       const summary = buildSummary(session, language, "2026-10-23");
       assert.doesNotMatch(summary, /SHOULD_NOT_EXPORT|再確認待ち|awaiting review/);
-      assert.match(summary, language === "ja" ? /背景・計画の記録なし/ : /No context or plan details recorded/);
+      assert.ok(summary.includes(workflowCopy[language].notRecorded));
     }
   }
 });

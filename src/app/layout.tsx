@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "WPTI-Quick | 暮らしから、次の一歩へ",
+  title: "WPTI-Quick | 運動と座る時間を3問で振り返る",
   icons: { icon: "/favicon.svg" },
-  description: "Reflect on leisure activity, active travel, and sitting; choose a next step with WPTI-Quick. Responses and plans stay in the browser."
+  description: "Answer three questions about movement and sitting. Review your responses and optionally write a note. Inputs are not sent or saved automatically."
 };
 
 export default function RootLayout({

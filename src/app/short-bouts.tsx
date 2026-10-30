@@ -3,71 +3,41 @@
 import { SHORT_BOUT_IDEAS, SHORT_BOUT_REFERENCES } from "../lib/short-bouts.ts";
 import type { Language } from "../lib/types.ts";
 import type { DialogueSession, DialogueAction } from "../lib/dialogue.ts";
-import { useEffect, useRef } from "react";
 import type { Dispatch } from "react";
 
-export function ShortBoutIdeas({ language, session, dispatch }: {
+export function ShortBoutIdeas({ language, session, dispatch, onOpenPlan }: {
   language: Language;
   session: DialogueSession;
   dispatch: Dispatch<DialogueAction>;
+  onOpenPlan: () => void;
 }) {
   const ja = language === "ja";
-  const focusAfterInsert = useRef(false);
   const canInsert = ["", "change"].includes(session.plan.choice) && !session.plan.action.trim();
-
-  function focusPlan() {
-    const details = document.querySelector<HTMLDetailsElement>("details.optional-dialogue");
-    if (details) details.open = true;
-    const editor = details?.querySelector<HTMLElement>(".action-plan");
-    const target = editor?.querySelector<HTMLElement>("#plan-action")
-      ?? editor?.querySelector<HTMLElement>('input[name="plan-choice"]:checked')
-      ?? editor?.querySelector<HTMLElement>(".enable-plan-notes")
-      ?? editor;
-    target?.focus();
-  }
-
-  useEffect(() => {
-    if (!focusAfterInsert.current) return;
-    focusAfterInsert.current = false;
-    focusPlan();
-  }, [session.plan.action]);
 
   function useIdea(action: string) {
     if (!canInsert) return;
-    focusAfterInsert.current = true;
     dispatch({ type: "startShortBout", value: action });
+    onOpenPlan();
   }
 
   return <section className="short-bout-guide no-print" aria-labelledby="short-bout-title">
-    <h2 id="short-bout-title">{ja ? "短い身体活動も、次の一歩に" : "Brief activity can be a next step"}</h2>
-    <p>{ja
-      ? "まとまった運動時間がなくても、生活の中で短い活動を積み重ねる方法があります。自分の暮らしに合う場面と、無理のない内容を考えてみましょう。"
-      : "Brief bouts can add to activity across the day. Consider opportunities that feel feasible and comfortable in your everyday life."}</p>
-    <p className="hint">{canInsert
-      ? ja
-        ? "例のボタンを押すと「小さな変更を試す」のメモが開き、内容を編集できます。選ばずに進めても構いません。誰かの回答を記入する場合は、その人の希望を確認してください。"
-        : "Choosing an example opens an editable ‘Try a small change’ draft. You can continue without choosing. If you are entering someone else's responses, check that this is what they want."
-      : ja
-        ? "選んだ方針や記入済みのメモがあるため、例で上書きしません。今の内容を開いて見直せます。"
-        : "An existing choice or written action will not be replaced by an example. Open your next step to review it."}</p>
-    {!canInsert && <button className="secondary-button" type="button" onClick={focusPlan}>
-      {ja ? "記入中の次の一歩を見る" : "View your current next step"}
-    </button>}
+    <h2 id="short-bout-title">{ja ? "例えば、こんなこと" : "Some ideas"}</h2>
+    <p>{ja ? "体調に合わせて、無理のないものを選んでください。" : "Choose something that feels safe and manageable for you."}</p>
+    {!canInsert && <><p>{ja ? "今のメモはそのまま残っています。" : "Your existing note is kept."}</p><button className="secondary-button" type="button" onClick={onOpenPlan}>{ja ? "今のメモを見る" : "View your note"}</button></>}
     <ul className="short-bout-list">
       {SHORT_BOUT_IDEAS[language].map(idea => <li key={idea.id}>
         <strong>{idea.title}</strong>
         <p>{idea.action}</p>
-        <p className="hint">{idea.context}</p>
-        {canInsert && <button className="secondary-button" type="button" aria-label={`${idea.title}: ${ja ? "この例をメモして編集する" : "Use and edit this example"}`} onClick={() => useIdea(idea.action)}>
-          {ja ? "この例をメモして編集する" : "Use and edit this example"}
+        <details className="idea-details"><summary>{ja ? "補足を見る" : "More about this idea"}</summary><p className="hint">{idea.context}</p></details>
+        {canInsert && <button className="secondary-button" type="button" aria-label={`${idea.title}: ${ja ? "これを選ぶ" : "Choose this idea"}`} onClick={() => useIdea(idea.action)}>
+          {ja ? "これを選ぶ" : "Choose this idea"}
         </button>}
       </li>)}
     </ul>
-    <p className="hint">{ja
-      ? "例の分数は一律の処方や達成基準ではありません。活動強度により健康効果の根拠は異なります。座位の小休止と高強度運動を同等とは扱いません。体調・移動能力・安全性・休息の必要性を優先してください。"
-      : "The example durations are not prescriptions or thresholds. Evidence varies by intensity; light sitting breaks are not equivalent to vigorous exercise. Prioritize health, mobility, safety and needed rest."}</p>
+    <p className="hint">{ja ? "時間は例です。休息が必要なときは、休むことを優先してください。" : "Times are examples. Rest when you need to."}</p>
     <details className="editor-details">
-      <summary>{ja ? "科学的根拠と限界" : "Evidence and limitations"}</summary>
+      <summary>{ja ? "注意点と研究について" : "Notes and research"}</summary>
+      <p>{ja ? "例の時間は、全員が目指す運動量ではありません。ゆっくり歩くことと、息が大きく弾む運動では、研究で分かっている効果が異なります。" : "The example durations are not prescriptions or targets for everyone. Evidence for light activity and vigorous exercise differs."}</p>
       <p className="hint">{ja
         ? "WHOの2020年ガイドラインでは、中高強度の身体活動を数える際の「1回10分以上」という条件はありません。成人の有酸素活動の目安は週150〜300分の中強度、または75〜150分の高強度（あるいは同等の組合せ）です。軽い歩行や立位を、中高強度身体活動の推奨時間にそのまま算入することはできません。ただし、座位時間を減らし、軽い身体活動に置き換えることにも健康上の意義があります。"
         : "WHO's 2020 guidelines no longer require moderate-to-vigorous activity to last at least 10 minutes. The adult aerobic recommendation is 150–300 minutes of moderate activity or 75–150 minutes of vigorous activity per week, or an equivalent combination. Light walking or standing cannot be counted directly toward the recommended duration of moderate-to-vigorous activity. However, reducing sedentary time and replacing it with light physical activity also has health benefits."}</p>

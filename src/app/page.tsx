@@ -4,13 +4,14 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { copy } from "../lib/i18n.ts";
 import { QUESTION_ORDER } from "../lib/scoring.ts";
 import type { Language, OptionId, QuestionId } from "../lib/types.ts";
-import { BehaviorProfile, ContextEditor, ConversationDetails, Evidence, PlanEditor, RecallHelp } from "./practice.tsx";
+import { BehaviorProfile, ContextEditor, ConversationDetails, Evidence, PlanEditor } from "./practice.tsx";
 import { buildSummary, PAPER_URL } from "../lib/practice.ts";
 import { createSession, dialogueReducer, referenceScore } from "../lib/dialogue.ts";
 import type { DialogueAction, DialogueSession, Nonresponse } from "../lib/dialogue.ts";
 import { workflowCopy } from "../lib/workflow-copy.ts";
 import { guidedCopy } from "../lib/guided-copy.ts";
 import { ShortBoutIdeas } from "./short-bouts.tsx";
+import { Assessment } from "./assessment.tsx";
 
 type View = "home" | "assessment" | "results" | "about" | "howTo" | "citation" | "policy";
 const infoViews = ["about", "howTo", "citation", "policy"] as const;
@@ -41,7 +42,6 @@ export default function Home() {
   const u = guidedCopy[language];
   const hasProgress = QUESTION_ORDER.some(id => session.answers[id] || session.nonresponses[id]) || Boolean(session.context.mode);
   const hasDownstream = Object.entries(session.context).some(([key, value]) => key !== "mode" && Boolean(value)) || Object.values(session.plan).some(Boolean);
-  const answeredCount = QUESTION_ORDER.filter(id => session.answers[id] || session.nonresponses[id]).length;
 
   function navigate(next: View) {
     setResetNotice(false);
@@ -118,26 +118,9 @@ export default function Home() {
         <div className="home-journey"><ol className="home-steps">{u.phases.map((label, index) => <li key={label}><span>0{index + 1}</span><strong>{label}</strong></li>)}</ol></div>
       </section>}
 
-      {view === "assessment" && <section className="quick-assessment" key={resetKey}>
-        <div className="assessment-heading">
-          <div><h1 tabIndex={-1}>{language === "ja" ? "3つの質問に答える" : "Three questions about your week"}</h1><p className="recall-period">{u.recall}</p></div>
-          <p className="answer-count" role="status">{language === "ja" ? "回答" : "Answered"} <strong>{answeredCount} / 3</strong></p>
-        </div>
-        {hasDownstream && <p className="change-warning">{w.answerReset}</p>}
-        <div className="quick-question-list">{t.questions.map((question, index) => <fieldset className="question-card" key={question.id} aria-describedby={`${question.id}-recall ${question.id}-unit${question.id === "sedentary" ? " sedentary-interval" : ""}`}>
-          <legend className="sr-only">{u.questionTitles[question.id]}</legend><h2 className="question-heading" aria-hidden="true"><span className="question-number">0{index + 1}</span><span className="question-title">{u.questionTitles[question.id]}</span></h2>
-          <span className="sr-only" id={`${question.id}-recall`}>{u.recall}</span>
-          <p className="question-unit" id={`${question.id}-unit`}>{u.questionUnits[question.id]}</p>
-          <div className="option-list">{question.options.map(option => <label className="option-row" key={option.id}><input type="radio" name={question.id} value={option.id} checked={session.answers[question.id] === option.id} onChange={() => selectAnswer(question.id, option.id)} /><span>{option.label}</span></label>)}</div>
-          {question.id === "sedentary" && <p className="category-hint" id="sedentary-interval">{u.betweenCategories}</p>}
-          <div className="nonresponse-options compact-nonresponse" aria-label={w.nonresponseTitle}>{(["unsure", "unable"] as const).map(value => <label className="option-row" key={value}><input type="radio" name={question.id} checked={session.nonresponses[question.id] === value} onChange={() => selectNonresponse(question.id, value)} /><span>{w.nonresponses[value]}</span></label>)}</div>
-          <div className="question-tools"><details className="question-extra"><summary>{u.help}</summary><p className="hint">{question.title}</p><RecallHelp id={question.id} language={language} /></details>
-          {(session.answers[question.id] || session.nonresponses[question.id]) && <button type="button" className="text-button clear-answer" aria-label={w.clearAnswer} onClick={() => selectNonresponse(question.id, "")}>{language === "ja" ? "選択を解除" : "Clear answer"}</button>}</div>
-        </fieldset>)}</div>
-        <div className="assessment-actions"><p className="hint">{u.skip}</p><button className="secondary-button" type="button" onClick={() => navigate("home")}>{u.home}</button><button className="primary-button" type="button" onClick={showSummary}>{language === "ja" ? "回答を振り返る" : "Review responses"} <span aria-hidden="true">→</span></button></div>
-      </section>}
+      {view === "assessment" && <Assessment key={resetKey} language={language} session={session} hasDownstream={hasDownstream} selectAnswer={selectAnswer} selectNonresponse={selectNonresponse} showSummary={showSummary} goHome={() => navigate("home")} />}
 
-      {view === "results" && <SummaryView language={language} session={session} dispatch={updateDialogue} date={formatDate(summaryDate, language)} editAnswers={() => navigate("assessment")} />}
+      {view === "results" && <SummaryView language={language} session={session} dispatch={updateDialogue} date={formatDate(summaryDate, language)} editAnswers={() => navigate("assessment")} goHome={() => navigate("home")} />}
       {view === "about" && <InfoPanel title={t.about.title}><p>{t.about.body}</p><div className="notice">{t.importantStatement}</div><Evidence language={language} /></InfoPanel>}
       {view === "howTo" && <InfoPanel title={t.howTo.title}><ul className="plain-list">{t.howTo.bullets.map(item => <li key={item}>{item}</li>)}</ul><div className="notice">{w.privacy}</div><p>{w.consent}</p></InfoPanel>}
       {view === "citation" && <InfoPanel title={t.citation.title}><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a><p>{w.version}</p></InfoPanel>}
@@ -147,66 +130,59 @@ export default function Home() {
   </div>;
 }
 
-function SummaryView({ language, session, dispatch, date, editAnswers }: { language: Language; session: DialogueSession; dispatch: React.Dispatch<DialogueAction>; date: string; editAnswers: () => void }) {
-  const t = copy[language];
-  const w = workflowCopy[language];
-  const u = guidedCopy[language];
+function SummaryView({ language, session, dispatch, date, editAnswers, goHome }: { language: Language; session: DialogueSession; dispatch: React.Dispatch<DialogueAction>; date: string; editAnswers: () => void; goHome: () => void }) {
+  const t = copy[language], w = workflowCopy[language], u = guidedCopy[language];
+  const ja = language === "ja";
   const result = referenceScore(session.answers);
+  const [stage, setStage] = useState<"result" | "ideas" | "plan">("result");
   const [copyStatus, setCopyStatus] = useState("");
-  const dialogueRef = useRef<HTMLDetailsElement>(null);
-  const focusPlanAfterNotes = useRef(false);
+  const panelRef = useRef<HTMLElement>(null);
   useEffect(() => { setCopyStatus(""); }, [session, language]);
-  function focusPlan() {
-    if (dialogueRef.current) dialogueRef.current.open = true;
-    const field = dialogueRef.current?.querySelector<HTMLElement>('#plan-action')
-      ?? dialogueRef.current?.querySelector<HTMLElement>('input[name="plan-choice"]:checked')
-      ?? dialogueRef.current?.querySelector<HTMLElement>('input[name="plan-choice"]');
-    field?.focus();
-  }
   useEffect(() => {
-    if (session.context.mode !== "notes" || !focusPlanAfterNotes.current) return;
-    focusPlanAfterNotes.current = false;
-    focusPlan();
-  }, [session.context.mode]);
+    panelRef.current?.querySelector<HTMLElement>(".screen-heading")?.focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }, [stage]);
   function openPlan() {
-    if (session.context.mode === "notes") focusPlan();
-    else {
-      focusPlanAfterNotes.current = true;
-      dispatch({ type: "contextMode", mode: "notes" });
-    }
+    if (session.context.mode !== "notes") dispatch({ type: "contextMode", mode: "notes" });
+    setStage("plan");
   }
   async function copySummary() {
     try { await navigator.clipboard.writeText(buildSummary(session, language, date)); setCopyStatus(w.copied); }
     catch { setCopyStatus(w.copyFailed); }
   }
-  const reference = <><p className="reference-total">{language === "ja" ? "参考点" : "Reference total"}: <strong>{result?.total} / 100</strong></p><p className="hint">{w.referenceNote}</p></>;
-  return <section className="panel result-panel printable-result quick-result">
-    <div className="result-heading"><div><p className="eyebrow">WPTI-Quick / {language === "ja" ? "対話支援" : "DIALOGUE SUPPORT"}</p><h1 tabIndex={-1}><span className="no-print">{language === "ja" ? "3つの回答を振り返る" : "Your three responses"}</span><span className="print-only">{w.summaryTitle}</span></h1><p>{t.results.date}: {date}</p><p className="no-print">{u.summaryIntro}</p><p className="print-only">{w.summaryIntro}</p></div><button className="text-button no-print edit-responses" type="button" onClick={editAnswers}>{w.edit}</button></div>
-    <BehaviorProfile language={language} session={session} />
-    {session.planNeedsReview && <div className="notice no-print" role="status"><p>{w.planReviewPending}</p><button type="button" className="text-button" onClick={openPlan}>{language === "ja" ? "残っている計画を見直す" : "Review the retained plan"}</button></div>}
-    <div className="next-step-entry no-print">
-      <button className="primary-button" type="button" onClick={openPlan}>{session.plan.choice
-        ? language === "ja" ? "次の一歩を見直す" : "Review your next step"
-        : language === "ja" ? "自分で次の一歩を選ぶ" : "Choose your next step"}</button>
-      <p className="hint">{language === "ja" ? "メモは任意です。誰かと使う場合は、記録してよい内容を一緒に確認してください。下の行動例からも始められます。" : "Notes are optional. If using this with someone else, agree what may be recorded. You can also start from an example below."}</p>
+  const reference = <><p className="reference-total">{ja ? "参考点" : "Reference total"}: <strong>{result?.total} / 100</strong></p><p className="hint">{w.referenceNote}</p></>;
+  return <section className="panel result-panel printable-result quick-result" ref={panelRef}>
+    <div className={stage === "result" ? "result-heading" : "print-only"}>
+      <div><h1 className={stage === "result" ? "screen-heading" : undefined} tabIndex={-1}><span className="no-print">{ja ? "回答の結果" : "Your responses"}</span><span className="print-only">{w.summaryTitle}</span></h1><p className="print-only">{t.results.date}: {date}</p><p className="print-only">{w.summaryIntro}</p></div>
+      <button className="text-button no-print edit-responses" type="button" onClick={editAnswers}>{w.edit}</button>
     </div>
-    <ShortBoutIdeas language={language} session={session} dispatch={dispatch} />
-
-    <details className="optional-dialogue no-print" ref={dialogueRef}>
-      <summary>{language === "ja" ? "生活背景・次の一歩を考える／メモする（任意）" : "Reflect on daily life and a next step / add notes (optional)"}</summary>
-      <div className="optional-dialogue-body">
-        <h2>{u.plan}</h2>
-        <PlanEditor language={language} session={session} dispatch={dispatch} />
-        <h2>{language === "ja" ? "いつもの暮らしについて" : "Daily life"}</h2>
-        <ContextEditor language={language} session={session} dispatch={dispatch} />
-      </div>
-    </details>
-    {result ? <><details className="reference-score no-print"><summary>{w.referenceTitle}</summary>{reference}</details><div className="reference-score print-only"><h2>{w.referenceTitle}</h2>{reference}</div></> : <p className="notice">{w.scoreUnavailable}</p>}
-    <ConversationDetails language={language} session={session} />
-    <div className="statement print-only">{w.boundary}</div>
-    <details className="editor-details no-print"><summary>{u.citations}</summary><p>{w.boundary}</p><p>{w.version}</p><p>{t.citation.text}</p><Evidence language={language} /></details>
-    <div className="print-details print-only"><p>{w.version}</p><h2>{t.citation.title}</h2><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a></div>
-    <div className="no-print export-controls"><p className="hint">{u.export}</p><details className="export-details"><summary>{language === "ja" ? "保存・共有について" : "About saving and sharing"}</summary><p>{w.exportNote}</p></details><div className="result-actions"><button className="secondary-button" type="button" onClick={copySummary}>{w.copy}</button><button className="primary-button" type="button" onClick={() => window.print()}>{t.common.print}</button></div><p role="status" aria-live="polite">{copyStatus}</p></div>
+    <div className={stage === "result" ? "response-overview" : "print-only"}><BehaviorProfile language={language} session={session} /></div>
+    {stage === "result" && <div className="result-finish no-print">
+      <p className="completion-message">{ja ? "回答はこれで終わりです。" : "You have finished the questions."}</p>
+      <p className="hint">{ja ? "この結果は、病気や健康状態を判定するものではありません。" : "These responses do not diagnose illness or assess your health."}</p>
+      {session.plan.choice && <div className="chosen-action"><strong>{w.planChoices[session.plan.choice]}</strong>{session.plan.action && <p>{session.plan.action}</p>}</div>}
+      {session.planNeedsReview && <p className="notice" role="status">{w.planReviewPending}</p>}
+      <div className="completion-actions"><button className="primary-button" type="button" onClick={goHome}>{ja ? "はじめの画面へ" : "Back to start"}</button>
+      <button className="secondary-button" type="button" onClick={() => session.plan.choice ? openPlan() : setStage("ideas")}>{session.plan.choice ? ja ? "メモを見直す" : "Review your note" : ja ? "やってみたいことを選ぶ（任意）" : "Choose something to do (optional)"}</button></div>
+    </div>}
+    {stage === "ideas" && <div className="optional-screen no-print">
+      <h1 className="screen-heading" tabIndex={-1}>{ja ? "やってみたいことはありますか？" : "Is there something you would like to do?"}</h1>
+      <p>{ja ? "選ばずに終わっても大丈夫です。" : "It is fine to finish without choosing."}</p>
+      <div className="action-row"><button className="secondary-button" type="button" onClick={() => setStage("result")}>{ja ? "結果に戻る" : "Back to responses"}</button><button className="text-button" type="button" onClick={openPlan}>{ja ? "自分で決める" : "Choose for yourself"}</button></div>
+      <ShortBoutIdeas language={language} session={session} dispatch={dispatch} onOpenPlan={() => setStage("plan")} />
+    </div>}
+    {stage === "plan" && <div className="optional-screen plan-screen no-print">
+      <h1 className="screen-heading" tabIndex={-1}>{session.plan.choice ? ja ? "メモを確認する" : "Check your note" : ja ? "これからどうしますか？" : "What would you like to do?"}</h1>
+      <p>{ja ? "書かずに終わっても大丈夫です。" : "You can finish without writing anything."}</p>
+      <PlanEditor language={language} session={session} dispatch={dispatch} onDone={() => setStage("result")} />
+      <details className="additional-context"><summary>{ja ? "暮らしのこともメモする（任意）" : "Add notes about daily life (optional)"}</summary><ContextEditor language={language} session={session} dispatch={dispatch} /></details>
+      <button className="text-button" type="button" onClick={() => setStage("result")}>{ja ? "結果に戻る" : "Back to responses"}</button>
+    </div>}
+    {stage === "result" && <div className="result-extras no-print">
+      <details className="reference-score"><summary>{w.referenceTitle}</summary>{result ? reference : <p>{w.scoreUnavailable}</p>}</details>
+      <details className="export-controls"><summary>{ja ? "結果をコピー・印刷する" : "Copy or print your responses"}</summary><p className="hint">{u.export}</p><details className="export-details"><summary>{ja ? "保存するときの注意" : "Before saving"}</summary><p>{w.exportNote}</p></details><div className="result-actions"><button className="secondary-button" type="button" onClick={copySummary}>{w.copy}</button><button className="secondary-button" type="button" onClick={() => window.print()}>{t.common.print}</button></div><p role="status" aria-live="polite">{copyStatus}</p></details>
+    </div>}
+    <div className="print-only"><ConversationDetails language={language} session={session} />{result ? <div className="reference-score"><h2>{w.referenceTitle}</h2>{reference}</div> : <p>{w.scoreUnavailable}</p>}<div className="statement">{w.boundary}</div><p>{w.version}</p><h2>{t.citation.title}</h2><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a></div>
   </section>;
 }
 
