@@ -43,6 +43,7 @@ export type DialogueAction =
   | { type: "planChoice"; choice: PlanChoice }
   | { type: "planDomain"; domain: ActionPlan["domain"] }
   | { type: "planField"; field: "action" | "when" | "support" | "review"; value: string }
+  | { type: "insertShortBout"; value: string }
   | { type: "reset" }
   | { type: "example" };
 
@@ -98,6 +99,11 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
     case "planField":
       if (session.context.mode !== "notes" || !["change", "maintain"].includes(session.plan.choice)) return session;
       return { ...session, plan: { ...session.plan, [action.field]: action.value } };
+    case "insertShortBout":
+      // Recheck the current state atomically: a stale or repeated suggestion
+      // click must never overwrite the participant's action or select a plan.
+      if (session.context.mode !== "notes" || session.plan.choice !== "change" || session.plan.action.trim() || !action.value.trim()) return session;
+      return { ...session, plan: { ...session.plan, action: action.value } };
   }
 }
 

@@ -41,6 +41,8 @@ test("preserves literal Quick v1.0 domain points and totals for all 64 complete 
           sedentary: sedentaryPoints
         }, JSON.stringify(answers));
         assert.equal(result.total, leisurePoints + transportPoints + sedentaryPoints, JSON.stringify(answers));
+        const expectedTotal = leisurePoints + transportPoints + sedentaryPoints;
+        assert.equal(result.band, expectedTotal <= 34 ? "low" : expectedTotal <= 59 ? "middle" : "high", JSON.stringify(answers));
         assert.deepEqual(getMissingQuestions(answers), []);
         checked += 1;
       }
