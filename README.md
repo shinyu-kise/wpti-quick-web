@@ -1,12 +1,12 @@
-# WPTI-Quick Web 1.6.1-dialogue-rc.1
+# WPTI-Quick Web 1.7.0-dialogue-rc.1
 
 A **dialogue-support prototype**. All three original questions appear on one page, followed immediately by the response summary. Optional life-context discussion and participant-chosen next-step notes are available on that same summary page. Japanese and English are supported.
 
-Quick instrument **v1.0 questions, option IDs/labels and scoring are unchanged**. Web and dialogue versions are separate. Unsure or unanswered dialogue entries are not scored. A legacy total is available only for complete instrument responses, under a collapsed reference section; it is not a diagnosis, percentage of health, or validated clinical threshold.
+Quick instrument **v1.0 source questions, option IDs/labels and scoring are unchanged**. Web 1.7.0 adds plain-language on-screen headings with the original question wording retained in help and print. See [the five usability improvements](docs/design-1.7.0.md). Web and dialogue versions are separate. Unsure or unanswered dialogue entries are not scored. A legacy total is available only for complete instrument responses, under a collapsed reference section; it is not a diagnosis, percentage of health, or validated clinical threshold.
 
 See [the vNext specification and release boundaries](docs/dialogue-vnext.md), [scientific boundaries](docs/scientific-boundaries.md), and [unresolved fractional-time categories](docs/sitting-time-boundaries.md).
 
-The [Web 1.5.0 design](docs/design-1.5.0.md) restores the short v1.1 response flow following author feedback on v1.4. Dialogue is version 1.1-prototype; Quick scoring remains v1.0. Comparative user testing has not been conducted.
+The [Web 1.5.0 design](docs/design-1.5.0.md) restores the short v1.1 response flow following author feedback on v1.4. That release used Dialogue 1.1-prototype. Web 1.7.0 uses Dialogue 1.2-prototype; Quick scoring remains v1.0. Comparative user testing has not been conducted.
 
 ## Setup
 

@@ -1,6 +1,6 @@
 {
   "name": "wpti-quick-web",
-  "version": "1.6.1-dialogue-rc.1",
+  "version": "1.7.0-dialogue-rc.1",
   "private": true,
   "type": "module",
   "description": "WPTI-Quick dialogue prototype: original responses, life context and participant-chosen next step. Legacy instrument v1.0 unchanged.",

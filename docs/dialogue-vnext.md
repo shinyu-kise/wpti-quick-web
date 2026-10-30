@@ -1,15 +1,15 @@
 # Dialogue vNext: specification and release boundaries
 
 Status: author-authorized release candidate, 2026-10-23 (Asia/Tokyo). Publication follows the remaining display/print checks; deployment success is recorded separately.
-Web: 1.6.1-dialogue-rc.1. Legacy scoring: Quick instrument 1.0.
-Dialogue: 1.1-prototype. Changing a user interface is not validation of an instrument.
+Web: 1.7.0-dialogue-rc.1. Legacy scoring: Quick instrument 1.0.
+Dialogue: 1.2-prototype. Changing a user interface is not validation of an instrument.
 
 ## Intended workflow
 
 1. Review the person's original responses in the three existing domains: leisure activity, active travel, and sitting/reclining while awake. Keep the original question text, response IDs, labels, units and point table unchanged. A separate unsure/unanswered state is permitted for dialogue; it is not a scored Quick response and is never zero-filled.
 2. Show the three original responses immediately. Offer context discussion and planning on this same page without requiring navigation through them. Discuss relevant context before choosing a plan. Discuss sitting situations, work/caring/travel constraints, health or mobility, environment, and available support. All context is optional, not scored. The person may discuss it without entering notes. A period note is a discussion annotation, not a new recall rule or retrospective assessment date.
 3. Choose a manageable next step with the person, including maintaining an existing behavior or making no new plan. No automatic lowest-score priority, activity dose, clinical risk class, or follow-up interval.
-4. Review, then optionally copy or print the original responses, context choices and plan. Clearly distinguish fictional examples. Show instrument, dialogue and Web versions. Changing instrument answers or recording mode clears downstream notes and plans with an advance warning. Editing optional context notes preserves an existing plan and flags it for explicit review; the pending-review label is included in copies and prints and does not block them.
+4. Review, then optionally copy or print the original responses, context choices and plan. Clearly distinguish fictional examples. Show instrument, dialogue and Web versions. In Web 1.7.0 / Dialogue 1.2, changing instrument answers or optional context notes preserves written context and plans and flags an existing plan for explicit review. Choosing to stop recording still clears notes and plans with an advance warning; the pending-review label is included in copies and prints and does not block them.
 
 ## Reference score
 

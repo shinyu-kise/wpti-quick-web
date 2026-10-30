@@ -89,7 +89,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "ポリシー"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.6.1-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.7.0-dialogue-rc.1",
       start: "生活行動から話し始める",
       restart: "入力をすべて消す",
       print: "印刷 / PDF保存",
@@ -98,9 +98,9 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "100点満点"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.6.1-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.7.0-dialogue-rc.1",
       title: "動く・移動する・座る。暮らしを振り返り、次の一歩へ。",
-      body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。本人と理学療法士などの専門職が一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
+      body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。一人で、または理学療法士などの支援者と一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
     },
     assessment: {
       title: "3領域の生活行動を確認する",
@@ -154,10 +154,10 @@ export const copy: Record<Language, AppCopy> = {
       title: "使い方",
       bullets: [
         "対象者: 成人",
-        "3項目の想起期間：過去1週間の平均的な状況。背景欄の時期メモは別の任意記録であり、この想起期間を変えません。",
+        "過去1週間の平均的な状況を振り返って、3問に答えます。生活背景に別の時期をメモしても、3問で振り返る期間は変わりません。",
         "回答できる項目を選びます。わからない・答えにくい・未回答のままでも対話できます。",
-        "本人と専門職で、3領域の回答と生活の背景を順に確認し、次の一歩を選びます。維持や新しく変えない選択もできます。",
-        "背景・計画は話すだけで記録しない方法も選べます。記録を残す場合は同意を確認し、まとめをコピー・印刷・PDF保存します。再読み込みやリセットで画面の入力は消えます。"
+        "一人で、または支援者と一緒に、3つの回答と生活の背景を振り返り、次の一歩を選びます。続けることや、今は新しい変更を決めないことも選べます。",
+        "メモせずに振り返るだけでも使えます。誰かと使う場合は、記録してよい内容を本人と確認してください。まとめはコピー・印刷・PDF保存できます。再読み込みやリセットで画面の入力は消えます。"
       ]
     },
     citation: {
@@ -171,7 +171,7 @@ export const copy: Record<Language, AppCopy> = {
         "質問文・選択肢・配点はQuick v1.0を保持しています。利用者が独自に改変して同じ版として使用することはできません。",
         "利用時には原著WPTI論文を引用し、使用したQuickの版とWeb版を記載してください。",
         "診断、個人の優劣付け、疾病リスクの推定を目的としません。",
-        "対話支援1.1-prototypeの保留状態・生活背景・計画はQuick v1.0の採点対象外です。研究利用では必要な同意・倫理承認範囲を別に確認してください。"
+        "対話支援1.2-prototypeの保留状態・生活背景・計画はQuick v1.0の採点対象外です。研究利用では必要な同意・倫理承認範囲を別に確認してください。"
       ]
     },
     questions: [
@@ -219,7 +219,7 @@ export const copy: Record<Language, AppCopy> = {
       policy: "Policy"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.6.1-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.7.0-dialogue-rc.1",
       start: "Start with daily behavior",
       restart: "Clear all inputs",
       print: "Print / Save as PDF",
@@ -228,9 +228,9 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "out of 100"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.6.1-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.7.0-dialogue-rc.1",
       title: "Move, travel, sit. Reflect on daily life. Choose a next step.",
-      body: "Explore leisure and transport activity and sedentary time with three questions. Use the results together with a physiotherapist or other professional to reflect on daily life and choose a manageable next step."
+      body: "Explore leisure and transport activity and sedentary time with three questions. Use the results on your own or with a physiotherapist or another support person to reflect on daily life and choose a manageable next step."
     },
     assessment: {
       title: "Explore three areas of daily behavior",
@@ -286,8 +286,8 @@ export const copy: Record<Language, AppCopy> = {
         "Target users: adults",
         "Recall period for the three items: average situation during the past 1 week. The optional context-period note is separate and does not change this recall period.",
         "Select responses where possible. Unsure, unable to answer, and unanswered items do not prevent a conversation.",
-        "Review the responses and life circumstances in order, then choose a next step together. Maintaining habits or making no new change are valid choices.",
-        "You can talk without recording context or plan details. If keeping a record is agreed, copy, print, or save the summary as PDF. Reloading or resetting clears page inputs."
+        "Review the responses and life circumstances on your own or with a support person, then choose a next step. Maintaining habits or making no new change are valid choices.",
+        "You can reflect without recording notes. If using this with someone else, agree what may be recorded. Copy, print, or save the summary as PDF if you wish. Reloading or resetting clears page inputs."
       ]
     },
     citation: {
@@ -301,7 +301,7 @@ export const copy: Record<Language, AppCopy> = {
         "Quick v1.0 questions, response options, and points are preserved. Do not label modified questions, response options, or points as Quick v1.0.",
         "Cite the original WPTI article and state both the Quick instrument version and the Web version used.",
         "This tool is not intended for diagnosis, ranking individuals, or estimating disease risk.",
-        "Dialogue 1.1-prototype nonresponse states, context, and plans are not scored by Quick v1.0. Check consent and applicable ethics approval separately for research use."
+        "Dialogue 1.2-prototype nonresponse states, context, and plans are not scored by Quick v1.0. Check consent and applicable ethics approval separately for research use."
       ]
     },
     questions: [
