@@ -10,6 +10,7 @@ import { createSession, dialogueReducer, referenceScore } from "../lib/dialogue.
 import type { DialogueAction, DialogueSession, Nonresponse } from "../lib/dialogue.ts";
 import { workflowCopy } from "../lib/workflow-copy.ts";
 import { guidedCopy } from "../lib/guided-copy.ts";
+import { ShortBoutIdeas } from "./short-bouts.tsx";
 
 type View = "home" | "assessment" | "results" | "about" | "howTo" | "citation" | "policy";
 const infoViews = ["about", "howTo", "citation", "policy"] as const;
@@ -158,6 +159,7 @@ function SummaryView({ language, session, dispatch, date, editAnswers }: { langu
   return <section className="panel result-panel printable-result quick-result">
     <div className="result-heading"><div><p className="eyebrow">WPTI-Quick / {language === "ja" ? "対話支援" : "DIALOGUE SUPPORT"}</p><h1 tabIndex={-1}><span className="no-print">{language === "ja" ? "3つの回答を振り返る" : "Your three responses"}</span><span className="print-only">{w.summaryTitle}</span></h1><p>{t.results.date}: {date}</p><p className="no-print">{u.summaryIntro}</p><p className="print-only">{w.summaryIntro}</p></div><button className="text-button no-print edit-responses" type="button" onClick={editAnswers}>{w.edit}</button></div>
     <BehaviorProfile language={language} session={session} />
+    <ShortBoutIdeas language={language} session={session} dispatch={dispatch} />
 
     <details className="optional-dialogue no-print">
       <summary>{language === "ja" ? "生活背景・次の一歩を話す（任意）" : "Talk about daily life and a next step (optional)"}</summary>
