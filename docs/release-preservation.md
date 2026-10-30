@@ -74,3 +74,10 @@ See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction chang
 - Preservation branch: `archive/web-v1.7.0-before-simple-flow-20261030`.
 - Web 1.8.0 / Dialogue 1.3 adds a one-question narrow-screen flow, explicit completion, separate optional notes and simpler Japanese. Quick v1.0 is unchanged.
 - Requested by the author on 2026-10-30; see [design and validation limits](design-1.8.0.md). Publication authorization and preservation follow the preceding releases; deployment success is verified separately.
+
+## Web 1.8.0 preserved before domain feedback
+
+- Previous production source: `d718f3108321d42851f139bda931c33a924f6f23`.
+- Preservation branch: `archive/web-v1.8.0-before-domain-feedback-20261030`.
+- Web 1.9.0 / Dialogue 1.4 makes each domain's points and point-based reflection candidates visible. Quick v1.0 scoring remains unchanged.
+- The author requested clearer domain feedback on 2026-10-30; see [design and boundaries](design-1.9.0.md). Earlier release archives are retained.

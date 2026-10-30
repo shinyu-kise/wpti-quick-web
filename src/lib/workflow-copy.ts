@@ -22,7 +22,7 @@ type WorkflowCopy = {
 export const workflowCopy: Record<Language, WorkflowCopy> = {
   ja: {
     steps: ["3問に答える", "暮らしについて話す", "やってみたいことを選ぶ"],
-    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.3-prototype ／ Web：1.8.0-dialogue-rc.1",
+    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.4-prototype ／ Web：1.9.0-dialogue-rc.1",
     boundary: "3つの回答を、暮らしを振り返るきっかけに使います。点数は参考です。健康の良し悪しや病気の診断、WHOの運動基準を満たすかどうか、支援が必要な順番を示すものではありません。",
     evidenceTitle: "原著WPTIとQuickの違い・研究上の限界",
     evidence: [
@@ -59,13 +59,13 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     privacy: "名前や連絡先など、個人が特定できる内容は書かないでください。入力は送信・自動保存されません。ページを読み込み直すか、入力を消してやり直すと消えます。",
     consent: "一人でも、理学療法士などの支援者と一緒でも使えます。誰かと使う場合は、使い方と記録してよい範囲を本人と確認してください。健康教室等での収集・研究利用は、この画面とは別に、必要な同意や倫理承認の範囲を確認します。",
     showSummary: "回答とメモを見る", copy: "まとめをコピー", copied: "コピーしました。貼り付ける場所を確認してください。", copyFailed: "コピーできませんでした。印刷 / PDF保存をご利用ください。", edit: "回答を直す", editPlan: "選んだ行動を見直す",
-    referenceTitle: "点数を見る（参考）", referenceNote: "Quick v1.0の決まりで計算した参考点です。原著WPTIとは別のものです。健康度の割合や、診断の基準ではありません。1点の差が測定できることを示さず、点数による判定や支援の優先順位は付けません。",
-    scoreUnavailable: "3問すべての時間が選ばれていないため、点数は出しません。回答の確認はこれで終わりです。", planReviewPending: "回答や暮らしのメモを変えました。選んだ行動は残してあるので、内容を確認してください。", notRecorded: "暮らしや行動のメモなし", notEntered: "未記入", summaryTitle: "回答とメモ", summaryIntro: "回答とメモの内容を確認してください。誰かと使う場合は一緒に確認します。メモは点数に影響しません。", exportNote: "コピーや印刷は、ボタンを押したときだけ行います。保存先や共有する相手を確認してください。誰かの回答を保存・共有する場合は、本人の了解を得てください。コピーした内容や保存したファイルは、画面の入力を消しても残ります。",
+    referenceTitle: "合計点を見る（参考）", referenceNote: "Quick v1.0の決まりで計算した参考点です。原著WPTIとは別のものです。健康度の割合や、診断の基準ではありません。1点の差が測定できることを示さず、健康状態の判定や、支援の優先順位を決めるものではありません。",
+    scoreUnavailable: "3問すべての時間が選ばれていないため、合計点は出しません。回答の確認はこれで終わりです。", planReviewPending: "回答や暮らしのメモを変えました。選んだ行動は残してあるので、内容を確認してください。", notRecorded: "暮らしや行動のメモなし", notEntered: "未記入", summaryTitle: "回答とメモ", summaryIntro: "回答とメモの内容を確認してください。誰かと使う場合は一緒に確認します。メモは点数に影響しません。", exportNote: "コピーや印刷は、ボタンを押したときだけ行います。保存先や共有する相手を確認してください。誰かの回答を保存・共有する場合は、本人の了解を得てください。コピーした内容や保存したファイルは、画面の入力を消しても残ります。",
     original: "原著をPubMedで読む"
   },
   en: {
     steps: ["Three areas of daily behavior", "Discuss life circumstances", "Choose a next step"],
-    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.3-prototype / Web: 1.8.0-dialogue-rc.1",
+    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.4-prototype / Web: 1.9.0-dialogue-rc.1",
     boundary: "Use the responses and life circumstances as conversation prompts. The Quick score is a reference only, not a percentage of health, a diagnosis, WHO guideline attainment, or a priority for support.",
     evidenceTitle: "Original WPTI vs Quick: research limitations",
     evidence: [
@@ -94,6 +94,6 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     choose: "What is it about? (optional)", otherDomain: "Other / more than one area", noPlan: "Clear this choice and its notes", action: "Something to try or keep doing", when: "When / where / how much? (optional)", support: "Help or an alternative if difficult (optional)", review: "A date to look back (optional)",
     personalized: "Check the plan against health and mobility. This screen does not prescribe an exercise dose or rank support needs.", reviewNote: "Next time, discuss what happened, what was manageable, and what got in the way. Behavior and circumstances can change within the same category or score.",
     privacy: "Do not enter names, contact details, or other personal identifiers. Inputs remain in this page’s memory; they are not automatically sent or saved. Reloading or ‘Clear all inputs’ erases them.", consent: "Use this on your own or with a physiotherapist or another support person. If using it with someone else, agree how to use it and what may be recorded. Collection or research use in a health class requires a separate check of consent and any applicable ethics approval.", showSummary: "Review the conversation summary", copy: "Copy summary", copied: "Copied. The clipboard retains the content; check where you share it.", copyFailed: "Copy failed. Please use Print / Save as PDF.", edit: "Review responses", editPlan: "Review next step",
-    referenceTitle: "Reference only: view the Quick v1.0 total", referenceNote: "Calculated with the unchanged categorical scoring. It is not equivalent to the original WPTI. It does not represent a health percentage, a clinical threshold, or measurement precision of one point. No decision bands or priorities are assigned.", scoreUnavailable: "Some instrument responses are missing, so no total is calculated. The conversation can continue without a score.", planReviewPending: "Responses or context notes have changed. The retained next step is awaiting review.", notRecorded: "No context or plan details recorded", notEntered: "Not entered", summaryTitle: "Conversation summary", summaryIntro: "Check the responses, life circumstances, and choices, together if using this with someone else. Keep scoring separate from notes.", exportNote: "Copying, printing, or saving as PDF happens only when you choose it. Check the destination and sharing. Get the person’s agreement before handling their record. ‘Clear all inputs’ does not erase clipboard content or saved files.", original: "Read the original paper on PubMed"
+    referenceTitle: "Reference only: view the Quick v1.0 total", referenceNote: "Calculated with the unchanged categorical scoring. It is not equivalent to the original WPTI. It does not represent a health percentage, a clinical threshold, or measurement precision of one point. No clinical decision bands or support priorities are assigned.", scoreUnavailable: "Some instrument responses are missing, so no total is calculated. The conversation can continue without a score.", planReviewPending: "Responses or context notes have changed. The retained next step is awaiting review.", notRecorded: "No context or plan details recorded", notEntered: "Not entered", summaryTitle: "Conversation summary", summaryIntro: "Check the responses, life circumstances, and choices, together if using this with someone else. Keep scoring separate from notes.", exportNote: "Copying, printing, or saving as PDF happens only when you choose it. Check the destination and sharing. Get the person’s agreement before handling their record. ‘Clear all inputs’ does not erase clipboard content or saved files.", original: "Read the original paper on PubMed"
   }
 };

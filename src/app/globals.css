@@ -1477,3 +1477,37 @@ button, input, textarea { font: inherit; }
 }
 
 @media screen { .quick-question-list .intensity-note { margin: 0 0 8px; font-size: 1rem; } }
+
+/* Compare existing item points without implying a health percentage. */
+@media screen {
+  .scored-profile .domain-feedback-message { border-radius: 12px; background: #f5f7fc; padding: 14px 16px; }
+  .scored-profile .domain-feedback-message p { margin: 0; }
+  .scored-profile .domain-feedback-message p + p { margin-top: 6px; font-size: 1rem; }
+  .scored-profile .feedback-headline { color: var(--ink); font-size: 1.125rem; font-weight: 750; line-height: 1.6; }
+  .scored-profile .feedback-comparable { background: #fff7eb; border-left: 4px solid #a46112; }
+  .quick-result .scored-profile .scored-domain { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--line); background: #f7f8fc; }
+  .quick-result .scored-profile .focus-domain { border: 2px solid #a46112; background: #fffaf2; }
+  .quick-result .scored-profile .scored-domain h3 { font-size: 1rem; line-height: 1.55; }
+  .quick-result .scored-profile .response-label { margin: 0; font-size: 1.125rem; }
+  .domain-score-line { display: flex; align-items: center; gap: 12px; width: 100%; }
+  .domain-score-track { flex: 1; height: 12px; border-radius: 6px; overflow: hidden; background: #e0e5f1; }
+  .domain-score-track span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+  .focus-domain .domain-score-track span { background: #a46112; }
+  .domain-points { flex: 0 0 auto; margin: 0; color: var(--ink); font-size: 1rem; white-space: nowrap; }
+  .domain-points strong { font-size: 1.5rem; }
+  .domain-focus-label { align-self: flex-start; color: #77460b; background: #ffe9c7; border-radius: 6px; padding: 2px 8px; font-size: 1rem; font-weight: 700; }
+  .unscored-label { margin: 0; color: var(--muted); font-size: 1rem; }
+  .domain-score-note { margin: 0; font-size: 1rem; color: var(--muted); }
+}
+@media screen and (max-width: 760px) {
+  .quick-result .scored-profile .scored-domain { gap: 4px; padding: 10px 12px; }
+  .scored-profile .domain-feedback-message { padding: 12px; }
+  .scored-profile .domain-list { gap: 10px; }
+}
+@media print {
+  .domain-feedback-message { border: 1px solid #777; padding: 8px; }
+  .feedback-headline, .domain-focus-label { font-weight: bold; }
+  .domain-score-track { display: none; }
+  .domain-points { margin: 4px 0; }
+  .focus-domain { border: 2px solid #555; }
+}
