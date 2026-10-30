@@ -159,7 +159,6 @@ function SummaryView({ language, session, dispatch, date, editAnswers, goHome }:
     <div className={stage === "result" ? "response-overview" : "print-only"}><BehaviorProfile language={language} session={session} /></div>
     {stage === "result" && <div className="result-finish no-print">
       <p className="completion-message">{ja ? "回答はこれで終わりです。" : "You have finished the questions."}</p>
-      <p className="hint">{ja ? "この結果は、病気や健康状態を判定するものではありません。" : "These responses do not diagnose illness or assess your health."}</p>
       {session.plan.choice && <div className="chosen-action"><strong>{w.planChoices[session.plan.choice]}</strong>{session.plan.action && <p>{session.plan.action}</p>}</div>}
       {session.planNeedsReview && <p className="notice" role="status">{w.planReviewPending}</p>}
       <div className="completion-actions"><button className="primary-button" type="button" onClick={goHome}>{ja ? "はじめの画面へ" : "Back to start"}</button>

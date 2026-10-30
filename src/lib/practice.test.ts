@@ -36,7 +36,7 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.3-prototype \/ Web v1.8.0-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.4-prototype \/ Web v1.9.0-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
@@ -156,6 +156,78 @@ test("unselected and talk-only exports exclude stale context, plan and review st
       const summary = buildSummary(session, language, "2026-10-23");
       assert.doesNotMatch(summary, /SHOULD_NOT_EXPORT|再確認待ち|awaiting review/);
       assert.ok(summary.includes(workflowCopy[language].notRecorded));
+    }
+  }
+});
+
+test("equal 60-point totals export distinct item scores and different reflection candidates in both languages", () => {
+  const cases = [
+    { answers: activeButSitting, points: [30, 30, 0], focus: 2 },
+    { answers: { leisure: "leisure_0_30", transport: "transport_91_150", sedentary: "sedentary_3_or_less" }, points: [0, 20, 40], focus: 0 },
+    { answers: { leisure: "leisure_91_150", transport: "transport_0_30", sedentary: "sedentary_3_or_less" }, points: [20, 0, 40], focus: 1 }
+  ] as const;
+  const names = {
+    ja: ["自由な時間の運動", "歩きや自転車での移動", "座る・横になる時間"],
+    en: ["Leisure activity", "Walking or cycling for travel", "Sitting or lying down"]
+  };
+  const maxima = [30, 30, 40];
+
+  for (const language of ["ja", "en"] as const) {
+    const prefix = language === "ja" ? "見直す候補：" : "Area to reflect on: ";
+    for (const pattern of cases) {
+      const session = { ...createSession(), answers: pattern.answers };
+      const lines = buildSummary(session, language, "2026-10-30").split("\n");
+      assert.ok(lines.some(line => line.endsWith(": 60/100")));
+      for (let index = 0; index < 3; index++) {
+        assert.ok(lines.includes(`${names[language][index]}: ${pattern.points[index]}/${maxima[index]}${language === "ja" ? "点" : " pts"}`));
+      }
+      assert.deepEqual(lines.filter(line => line.startsWith(prefix)), [`${prefix}${names[language][pattern.focus]}`]);
+    }
+  }
+});
+
+test("partial exports distinguish a scored zero from unsure, declined and unanswered items without a comparison", () => {
+  for (const nonresponse of ["unsure", "unable"] as const) {
+    let session = createSession();
+    session = dialogueReducer(session, { type: "answer", questionId: "leisure", optionId: "leisure_0_30" });
+    session = dialogueReducer(session, { type: "nonresponse", questionId: "transport", value: nonresponse });
+    for (const language of ["ja", "en"] as const) {
+      const summary = buildSummary(session, language, "2026-10-30");
+      const lines = summary.split("\n");
+      if (language === "ja") {
+        assert.ok(lines.includes("自由な時間の運動: 0/30点"));
+        assert.ok(lines.includes("歩きや自転車での移動: 点数なし"));
+        assert.ok(lines.includes("座る・横になる時間: 点数なし"));
+        assert.ok(lines.includes("選ばれた時間だけでは、3つを比べられません。"));
+        assert.ok(summary.includes(nonresponse === "unsure" ? "わからない" : "答えない"));
+        assert.ok(summary.includes("未回答"));
+      } else {
+        assert.ok(lines.includes("Leisure activity: 0/30 pts"));
+        assert.ok(lines.includes("Walking or cycling for travel: Not scored"));
+        assert.ok(lines.includes("Sitting or lying down: Not scored"));
+        assert.ok(lines.includes("The selected times are not enough to compare all three areas."));
+        assert.ok(summary.includes(nonresponse === "unsure" ? "Not sure" : "Prefer not to answer"));
+        assert.ok(summary.includes("Unanswered"));
+      }
+      assert.doesNotMatch(summary, /\d+\/100/);
+      assert.deepEqual(lines.filter(line => /^(見直す候補：|Area to reflect on: )/.test(line)), []);
+    }
+  }
+});
+
+test("all-maximum export shows three full item scores without inventing a low domain or health clearance", () => {
+  const session: DialogueSession = { ...createSession(), answers: { leisure: "leisure_151_plus", transport: "transport_151_plus", sedentary: "sedentary_3_or_less" } };
+  for (const language of ["ja", "en"] as const) {
+    const summary = buildSummary(session, language, "2026-10-30");
+    const lines = summary.split("\n");
+    assert.match(summary, /100\/100/);
+    assert.deepEqual(lines.filter(line => /^(見直す候補：|Area to reflect on: )/.test(line)), []);
+    if (language === "ja") {
+      for (const expected of ["自由な時間の運動: 30/30点", "歩きや自転車での移動: 30/30点", "座る・横になる時間: 40/40点", "3つとも、この採点では満点です。", "点数だけで、健康上の不足は判断できません。"]) assert.ok(lines.includes(expected));
+      assert.doesNotMatch(summary, /不足なし|健康です/);
+    } else {
+      for (const expected of ["Leisure activity: 30/30 pts", "Walking or cycling for travel: 30/30 pts", "Sitting or lying down: 40/40 pts", "All three responses receive the maximum points in this scoring system.", "Scores alone cannot establish a health-related deficiency."]) assert.ok(lines.includes(expected));
+      assert.doesNotMatch(summary, /You are healthy|No health deficiencies/);
     }
   }
 });

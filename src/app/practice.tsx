@@ -8,6 +8,8 @@ import { CONTEXT_FIELDS } from "../lib/dialogue.ts";
 import type { DialogueAction, DialogueSession, PlanChoice } from "../lib/dialogue.ts";
 import { workflowCopy } from "../lib/workflow-copy.ts";
 import { guidedCopy } from "../lib/guided-copy.ts";
+import { getDomainFeedback } from "../lib/domain-feedback.ts";
+import { domainFeedbackCopy, domainFeedbackMessage } from "../lib/domain-feedback-copy.ts";
 import { QUESTION_ORDER } from "../lib/scoring.ts";
 import type { Language, QuestionId } from "../lib/types.ts";
 
@@ -48,24 +50,37 @@ export function RecallHelp({ id, language }: { id: QuestionId; language: Languag
 }
 
 export function BehaviorProfile({ language, session, compact = true }: Pick<DialogueProps, "language" | "session"> & { compact?: boolean }) {
-  const t = copy[language];
-  const w = workflowCopy[language];
-  return <section className="domain-section behavior-profile" aria-labelledby="profile-title">
-    <h2 id="profile-title">{w.profileTitle}</h2>
-    <p className={`hint${compact ? " print-only" : ""}`}>{t.assessment.recallPeriod}</p>
-    <p className={`hint${compact ? " print-only" : ""}`}>{w.profileNote}</p>
-    <div className="domain-list">
-      {QUESTION_ORDER.map((id, index) => <article className="domain-row" key={id}>
-        <p className="eyebrow">0{index + 1}</p>
-        {compact && <h3 className="no-print">{guidedCopy[language].profileTitles[id]}</h3>}
-        <h3 className={compact ? "print-only" : undefined}>{t.questions.find(q => q.id === id)?.title}</h3>
-        <p className={`response-label ${session.answers[id] ? "" : "unresolved"}`}>{responseLabel(session.answers, id, language, session.nonresponses)}</p>
-      </article>)}
+  const t = copy[language], w = workflowCopy[language], c = domainFeedbackCopy[language];
+  const feedback = getDomainFeedback(session.answers);
+  return <section className="domain-section behavior-profile scored-profile" aria-labelledby="profile-title">
+    <h2 id="profile-title">{c.title}</h2>
+    <div className={`domain-feedback-message feedback-${feedback.status}`}>
+      <p className="feedback-headline">{domainFeedbackMessage(feedback, language)}</p>
+      {feedback.status === "comparable" && <p>{feedback.focusIds.length === 1 ? c.hints[feedback.focusIds[0]] : c.choose}</p>}
     </div>
+    <p className={`hint${compact ? " print-only" : ""}`}>{t.assessment.recallPeriod}</p>
+    <div className="domain-list">
+      {QUESTION_ORDER.map(id => {
+        const { points, max } = feedback.domains[id];
+        const focus = feedback.focusIds.includes(id);
+        return <article className={`domain-row scored-domain${focus ? " focus-domain" : ""}`} key={id}>
+          {compact && <h3 className="no-print">{c.names[id]}</h3>}
+          <h3 className={compact ? "print-only" : undefined}>{t.questions.find(q => q.id === id)?.title}</h3>
+          <p className={`response-label ${points === null ? "unresolved" : ""}`}>{responseLabel(session.answers, id, language, session.nonresponses)}</p>
+          {points !== null ? <div className="domain-score-line">
+            <div className="domain-score-track" aria-hidden="true"><span style={{ width: `${points / max * 100}%` }} /></div>
+            <p className="domain-points"><strong>{points}</strong> / {max}{language === "ja" ? "点" : " pts"}</p>
+          </div> : <p className="unscored-label">{c.noScore}</p>}
+          {focus && <span className="domain-focus-label">{c.candidate}</span>}
+        </article>;
+      })}
+    </div>
+    <p className="domain-score-note">{feedback.status !== "incomplete" && <>{c.comparison}<br /></>}{c.limitation}</p>
+    <p className="print-only">{c.method}</p>
     {compact && <details className="editor-details profile-guide no-print">
-      <summary>{language === "ja" ? "回答の見方" : "About these responses"}</summary>
-      <p>{guidedCopy[language].recall}</p>
-      <p>{w.profileNote}</p>
+      <summary>{language === "ja" ? "点数と回答の見方" : "About the scores and responses"}</summary>
+      <p>{c.method}</p><p>{c.missing}</p>
+      <p>{guidedCopy[language].recall}</p><p>{w.profileNote}</p>
       {QUESTION_ORDER.map(id => <p key={id}>{t.questions.find(q => q.id === id)?.title}</p>)}
     </details>}
   </section>;

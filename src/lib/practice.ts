@@ -4,12 +4,14 @@ import type { DialogueSession, NonresponseMap } from "./dialogue.ts";
 import { QUESTION_ORDER } from "./scoring.ts";
 import type { AnswerMap, Language, QuestionId } from "./types.ts";
 import { workflowCopy } from "./workflow-copy.ts";
+import { getDomainFeedback } from "./domain-feedback.ts";
+import { domainFeedbackCopy, domainFeedbackMessage } from "./domain-feedback-copy.ts";
 
 export { emptyPlan } from "./dialogue.ts";
 export type { ActionPlan } from "./dialogue.ts";
-export const WEB_VERSION = "1.8.0-dialogue-rc.1";
+export const WEB_VERSION = "1.9.0-dialogue-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
-export const DIALOGUE_VERSION = "1.3-prototype";
+export const DIALOGUE_VERSION = "1.4-prototype";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
 
 // Recall support only: no conversion to response categories or score thresholds.
@@ -34,6 +36,8 @@ export function buildSummary(session: DialogueSession, language: Language, date:
   const t = copy[language];
   const w = workflowCopy[language];
   const result = referenceScore(session.answers);
+  const feedback = getDomainFeedback(session.answers);
+  const feedbackCopy = domainFeedbackCopy[language];
   const { context, plan } = session;
   const notes = context.mode === "notes";
   return [
@@ -44,6 +48,12 @@ export function buildSummary(session: DialogueSession, language: Language, date:
     t.assessment.recallPeriod,
     ...QUESTION_ORDER.map(id => `${t.domainLabels[id]}: ${responseLabel(session.answers, id, language, session.nonresponses)}`),
     w.profileNote,
+    "",
+    feedbackCopy.title,
+    ...QUESTION_ORDER.map(id => `${feedbackCopy.names[id]}: ${feedback.domains[id].points === null ? feedbackCopy.noScore : `${feedback.domains[id].points}/${feedback.domains[id].max}${language === "ja" ? "点" : " pts"}`}`),
+    domainFeedbackMessage(feedback, language),
+    feedbackCopy.method,
+    feedbackCopy.limitation,
     "",
     w.contextTitle,
     ...(notes ? CONTEXT_FIELDS.map(field => `${w.contextLabels[field]}: ${context[field] || w.notEntered}`) : [w.notRecorded]),
