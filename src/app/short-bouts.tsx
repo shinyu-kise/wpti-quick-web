@@ -13,42 +13,56 @@ export function ShortBoutIdeas({ language, session, dispatch }: {
 }) {
   const ja = language === "ja";
   const focusAfterInsert = useRef(false);
-  const canInsert = session.context.mode === "notes" &&
-    session.plan.choice === "change" && !session.plan.action.trim();
+  const canInsert = ["", "change"].includes(session.plan.choice) && !session.plan.action.trim();
+
+  function focusPlan() {
+    const details = document.querySelector<HTMLDetailsElement>("details.optional-dialogue");
+    if (details) details.open = true;
+    const editor = details?.querySelector<HTMLElement>(".action-plan");
+    const target = editor?.querySelector<HTMLElement>("#plan-action")
+      ?? editor?.querySelector<HTMLElement>('input[name="plan-choice"]:checked')
+      ?? editor?.querySelector<HTMLElement>(".enable-plan-notes")
+      ?? editor;
+    target?.focus();
+  }
 
   useEffect(() => {
     if (!focusAfterInsert.current) return;
     focusAfterInsert.current = false;
-    const field = document.getElementById("plan-action");
-    const details = field?.closest<HTMLDetailsElement>("details.optional-dialogue");
-    if (details) details.open = true;
-    field?.focus();
+    focusPlan();
   }, [session.plan.action]);
 
   function useIdea(action: string) {
     if (!canInsert) return;
     focusAfterInsert.current = true;
-    dispatch({ type: "insertShortBout", value: action });
+    dispatch({ type: "startShortBout", value: action });
   }
 
   return <section className="short-bout-guide no-print" aria-labelledby="short-bout-title">
     <h2 id="short-bout-title">{ja ? "短い身体活動も、次の一歩に" : "Brief activity can be a next step"}</h2>
     <p>{ja
-      ? "まとまった運動時間がなくても、生活の中で短い活動を積み重ねる方法があります。本人に合う場面と無理のない内容を話し合いましょう。"
-      : "Brief bouts can add to activity across the day. Discuss which opportunities are feasible and comfortable in everyday life."}</p>
+      ? "まとまった運動時間がなくても、生活の中で短い活動を積み重ねる方法があります。自分の暮らしに合う場面と、無理のない内容を考えてみましょう。"
+      : "Brief bouts can add to activity across the day. Consider opportunities that feel feasible and comfortable in your everyday life."}</p>
+    <p className="hint">{canInsert
+      ? ja
+        ? "例のボタンを押すと「小さな変更を試す」のメモが開き、内容を編集できます。選ばずに進めても構いません。誰かの回答を記入する場合は、その人の希望を確認してください。"
+        : "Choosing an example opens an editable ‘Try a small change’ draft. You can continue without choosing. If you are entering someone else's responses, check that this is what they want."
+      : ja
+        ? "選んだ方針や記入済みのメモがあるため、例で上書きしません。今の内容を開いて見直せます。"
+        : "An existing choice or written action will not be replaced by an example. Open your next step to review it."}</p>
+    {!canInsert && <button className="secondary-button" type="button" onClick={focusPlan}>
+      {ja ? "記入中の次の一歩を見る" : "View your current next step"}
+    </button>}
     <ul className="short-bout-list">
       {SHORT_BOUT_IDEAS[language].map(idea => <li key={idea.id}>
         <strong>{idea.title}</strong>
         <p>{idea.action}</p>
         <p className="hint">{idea.context}</p>
-        {canInsert && <button className="secondary-button" type="button" aria-controls="plan-action" aria-label={`${idea.title}: ${ja ? "この例を計画欄へ入れる" : "Use as plan draft"}`} onClick={() => useIdea(idea.action)}>
-          {ja ? "この例を計画欄へ入れる" : "Use as plan draft"}
+        {canInsert && <button className="secondary-button" type="button" aria-label={`${idea.title}: ${ja ? "この例をメモして編集する" : "Use and edit this example"}`} onClick={() => useIdea(idea.action)}>
+          {ja ? "この例をメモして編集する" : "Use and edit this example"}
         </button>}
       </li>)}
     </ul>
-    <p className="hint">{ja
-      ? "計画に使う場合は、下の「生活背景・次の一歩を話す」で本人と確認して入力欄を開き、「小さな変更を試す」を選びます。計画欄が空のときだけ、例を入れるボタンが表示されます。記入済みの内容は上書きしません。"
-      : "To use an example, open ‘Talk about daily life and a next step’ below, agree with the participant to open note fields, and choose ‘Try a small change’. Draft buttons appear only while the action field is empty. Existing text is never overwritten."}</p>
     <p className="hint">{ja
       ? "例の分数は一律の処方や達成基準ではありません。活動強度により健康効果の根拠は異なります。座位の小休止と高強度運動を同等とは扱いません。体調・移動能力・安全性・休息の必要性を優先してください。"
       : "The example durations are not prescriptions or thresholds. Evidence varies by intensity; light sitting breaks are not equivalent to vigorous exercise. Prioritize health, mobility, safety and needed rest."}</p>

@@ -109,6 +109,7 @@ export default function Home() {
             <p className="eyebrow">WELLNESS, YOUR WAY.</p>
             <h1 className="hero-title" tabIndex={-1}>{u.title.map((line, index) => <span className={index === 2 ? "hero-accent" : ""} key={line}>{line}</span>)}</h1>
             <p className="lead">{u.intro}</p>
+            <p className="audience-note">{u.audience}</p>
             <div className="action-row"><button className="primary-button" type="button" onClick={() => navigate(hasProgress ? lastStep : "assessment")}>{hasProgress ? u.resume : u.start} <span aria-hidden="true">→</span></button>{!hasProgress && <button className="secondary-button" type="button" onClick={() => { dispatch({ type: "example" }); setSummaryDate(new Date().toISOString()); navigate("results"); }}>{u.example}</button>}</div>
             <p className="mini-privacy">{u.privacy}</p>
           </div>
@@ -123,12 +124,14 @@ export default function Home() {
           <p className="answer-count" role="status">{language === "ja" ? "回答" : "Answered"} <strong>{answeredCount} / 3</strong></p>
         </div>
         {hasDownstream && <p className="change-warning">{w.answerReset}</p>}
-        <div className="quick-question-list">{t.questions.map((question, index) => <fieldset className="question-card" key={question.id} aria-describedby={`${question.id}-recall`}>
-          <legend className="sr-only">{question.title}</legend><h2 className="question-heading" aria-hidden="true"><span className="question-number">0{index + 1}</span><span className="question-title">{question.title}</span></h2>
-          <span className="sr-only" id={`${question.id}-recall`}>{t.assessment.recallPeriod}</span>
+        <div className="quick-question-list">{t.questions.map((question, index) => <fieldset className="question-card" key={question.id} aria-describedby={`${question.id}-recall ${question.id}-unit${question.id === "sedentary" ? " sedentary-interval" : ""}`}>
+          <legend className="sr-only">{u.questionTitles[question.id]}</legend><h2 className="question-heading" aria-hidden="true"><span className="question-number">0{index + 1}</span><span className="question-title">{u.questionTitles[question.id]}</span></h2>
+          <span className="sr-only" id={`${question.id}-recall`}>{u.recall}</span>
+          <p className="question-unit" id={`${question.id}-unit`}>{u.questionUnits[question.id]}</p>
           <div className="option-list">{question.options.map(option => <label className="option-row" key={option.id}><input type="radio" name={question.id} value={option.id} checked={session.answers[question.id] === option.id} onChange={() => selectAnswer(question.id, option.id)} /><span>{option.label}</span></label>)}</div>
+          {question.id === "sedentary" && <p className="category-hint" id="sedentary-interval">{u.betweenCategories}</p>}
           <div className="nonresponse-options compact-nonresponse" aria-label={w.nonresponseTitle}>{(["unsure", "unable"] as const).map(value => <label className="option-row" key={value}><input type="radio" name={question.id} checked={session.nonresponses[question.id] === value} onChange={() => selectNonresponse(question.id, value)} /><span>{w.nonresponses[value]}</span></label>)}</div>
-          <div className="question-tools"><details className="question-extra"><summary>{u.help}</summary><RecallHelp id={question.id} language={language} /></details>
+          <div className="question-tools"><details className="question-extra"><summary>{u.help}</summary><p className="hint">{question.title}</p><RecallHelp id={question.id} language={language} /></details>
           {(session.answers[question.id] || session.nonresponses[question.id]) && <button type="button" className="text-button clear-answer" aria-label={w.clearAnswer} onClick={() => selectNonresponse(question.id, "")}>{language === "ja" ? "選択を解除" : "Clear answer"}</button>}</div>
         </fieldset>)}</div>
         <div className="assessment-actions"><p className="hint">{u.skip}</p><button className="secondary-button" type="button" onClick={() => navigate("home")}>{u.home}</button><button className="primary-button" type="button" onClick={showSummary}>{language === "ja" ? "回答を振り返る" : "Review responses"} <span aria-hidden="true">→</span></button></div>
@@ -150,7 +153,28 @@ function SummaryView({ language, session, dispatch, date, editAnswers }: { langu
   const u = guidedCopy[language];
   const result = referenceScore(session.answers);
   const [copyStatus, setCopyStatus] = useState("");
+  const dialogueRef = useRef<HTMLDetailsElement>(null);
+  const focusPlanAfterNotes = useRef(false);
   useEffect(() => { setCopyStatus(""); }, [session, language]);
+  function focusPlan() {
+    if (dialogueRef.current) dialogueRef.current.open = true;
+    const field = dialogueRef.current?.querySelector<HTMLElement>('#plan-action')
+      ?? dialogueRef.current?.querySelector<HTMLElement>('input[name="plan-choice"]:checked')
+      ?? dialogueRef.current?.querySelector<HTMLElement>('input[name="plan-choice"]');
+    field?.focus();
+  }
+  useEffect(() => {
+    if (session.context.mode !== "notes" || !focusPlanAfterNotes.current) return;
+    focusPlanAfterNotes.current = false;
+    focusPlan();
+  }, [session.context.mode]);
+  function openPlan() {
+    if (session.context.mode === "notes") focusPlan();
+    else {
+      focusPlanAfterNotes.current = true;
+      dispatch({ type: "contextMode", mode: "notes" });
+    }
+  }
   async function copySummary() {
     try { await navigator.clipboard.writeText(buildSummary(session, language, date)); setCopyStatus(w.copied); }
     catch { setCopyStatus(w.copyFailed); }
@@ -159,15 +183,22 @@ function SummaryView({ language, session, dispatch, date, editAnswers }: { langu
   return <section className="panel result-panel printable-result quick-result">
     <div className="result-heading"><div><p className="eyebrow">WPTI-Quick / {language === "ja" ? "対話支援" : "DIALOGUE SUPPORT"}</p><h1 tabIndex={-1}><span className="no-print">{language === "ja" ? "3つの回答を振り返る" : "Your three responses"}</span><span className="print-only">{w.summaryTitle}</span></h1><p>{t.results.date}: {date}</p><p className="no-print">{u.summaryIntro}</p><p className="print-only">{w.summaryIntro}</p></div><button className="text-button no-print edit-responses" type="button" onClick={editAnswers}>{w.edit}</button></div>
     <BehaviorProfile language={language} session={session} />
+    {session.planNeedsReview && <div className="notice no-print" role="status"><p>{w.planReviewPending}</p><button type="button" className="text-button" onClick={openPlan}>{language === "ja" ? "残っている計画を見直す" : "Review the retained plan"}</button></div>}
+    <div className="next-step-entry no-print">
+      <button className="primary-button" type="button" onClick={openPlan}>{session.plan.choice
+        ? language === "ja" ? "次の一歩を見直す" : "Review your next step"
+        : language === "ja" ? "自分で次の一歩を選ぶ" : "Choose your next step"}</button>
+      <p className="hint">{language === "ja" ? "メモは任意です。誰かと使う場合は、記録してよい内容を一緒に確認してください。下の行動例からも始められます。" : "Notes are optional. If using this with someone else, agree what may be recorded. You can also start from an example below."}</p>
+    </div>
     <ShortBoutIdeas language={language} session={session} dispatch={dispatch} />
 
-    <details className="optional-dialogue no-print">
-      <summary>{language === "ja" ? "生活背景・次の一歩を話す（任意）" : "Talk about daily life and a next step (optional)"}</summary>
+    <details className="optional-dialogue no-print" ref={dialogueRef}>
+      <summary>{language === "ja" ? "生活背景・次の一歩を考える／メモする（任意）" : "Reflect on daily life and a next step / add notes (optional)"}</summary>
       <div className="optional-dialogue-body">
-        <h2>{language === "ja" ? "いつもの暮らしについて" : "Daily life"}</h2>
-        <ContextEditor language={language} session={session} dispatch={dispatch} />
         <h2>{u.plan}</h2>
         <PlanEditor language={language} session={session} dispatch={dispatch} />
+        <h2>{language === "ja" ? "いつもの暮らしについて" : "Daily life"}</h2>
+        <ContextEditor language={language} session={session} dispatch={dispatch} />
       </div>
     </details>
     {result ? <><details className="reference-score no-print"><summary>{w.referenceTitle}</summary>{reference}</details><div className="reference-score print-only"><h2>{w.referenceTitle}</h2>{reference}</div></> : <p className="notice">{w.scoreUnavailable}</p>}

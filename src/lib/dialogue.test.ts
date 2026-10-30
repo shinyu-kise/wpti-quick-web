@@ -23,31 +23,63 @@ test("initial session has no imputed answers, context period, plan, or score", (
 });
 
 test("nonresponses stay separate from Quick answers and replacing them restores only the selected response", () => {
-  let session = plannedSession();
+  const before = plannedSession();
+  let session = before;
   session = dialogueReducer(session, { type: "nonresponse", questionId: "sedentary", value: "unsure" });
   assert.equal(session.answers.sedentary, undefined);
   assert.equal(session.nonresponses.sedentary, "unsure");
   assert.equal(referenceScore(session.answers), null);
-  assert.deepEqual(session.context, emptyContext);
-  assert.deepEqual(session.plan, emptyPlan);
+  assert.deepEqual(session.context, before.context);
+  assert.deepEqual(session.plan, before.plan);
+  assert.equal(session.planNeedsReview, true);
   session = dialogueReducer(session, { type: "answer", questionId: "sedentary", optionId: "sedentary_8_plus" });
   assert.equal(session.nonresponses.sedentary, undefined);
   assert.equal(referenceScore(session.answers)?.total, 60);
+  assert.deepEqual(session.plan, before.plan);
+  assert.equal(session.planNeedsReview, true);
   session = dialogueReducer(session, { type: "nonresponse", questionId: "sedentary", value: "" });
   assert.equal(session.answers.sedentary, undefined);
   assert.equal(session.nonresponses.sedentary, undefined);
 });
 
-test("changing an answer clears downstream context, plan and pending review but preserves the demo marker", () => {
-  const before = dialogueReducer(plannedSession(), { type: "contextField", field: "supports", value: "Community support" });
-  assert.equal(before.planNeedsReview, true);
+test("changing an answer preserves context and plan, recalculates the score and asks for review", () => {
+  const before = dialogueReducer(plannedSession(), { type: "reviewContext" });
+  assert.equal(before.contextReviewed, true);
+  assert.equal(before.planNeedsReview, false);
   const after = dialogueReducer(before, { type: "answer", questionId: "transport", optionId: "transport_31_90" });
-  assert.deepEqual(after.context, emptyContext);
-  assert.deepEqual(after.plan, emptyPlan);
+  assert.deepEqual(after.context, before.context);
+  assert.deepEqual(after.plan, before.plan);
   assert.equal(after.contextReviewed, false);
-  assert.equal(after.planNeedsReview, false);
+  assert.equal(after.planNeedsReview, true);
   assert.equal(after.demo, true);
+  assert.equal(referenceScore(before.answers)?.total, 60);
+  assert.equal(referenceScore(after.answers)?.total, 40);
   assert.equal(dialogueReducer(before, { type: "answer", questionId: "transport", optionId: "transport_151_plus" }), before);
+  const acknowledged = dialogueReducer(after, { type: "acknowledgePlanReview" });
+  assert.equal(acknowledged.planNeedsReview, false);
+  assert.deepEqual(acknowledged.plan, before.plan);
+});
+
+test("answer edits without a plan keep notes without creating a plan or review task", () => {
+  let session = dialogueReducer(createSession(), { type: "contextMode", mode: "notes" });
+  session = dialogueReducer(session, { type: "contextField", field: "sitting", value: "Time spent in meetings" });
+  const after = dialogueReducer(session, { type: "answer", questionId: "transport", optionId: "transport_31_90" });
+  assert.deepEqual(after.context, session.context);
+  assert.deepEqual(after.plan, emptyPlan);
+  assert.equal(after.planNeedsReview, false);
+});
+
+test("a choice to make no new change is retained for review after every nonresponse edit", () => {
+  const before = dialogueReducer(plannedSession(), { type: "planChoice", choice: "none" });
+  for (const value of ["unsure", "unable", ""] as const) {
+    const after = dialogueReducer(before, { type: "nonresponse", questionId: "leisure", value });
+    assert.deepEqual(after.context, before.context);
+    assert.deepEqual(after.plan, before.plan);
+    assert.equal(after.plan.choice, "none");
+    assert.equal(after.planNeedsReview, true);
+    assert.equal(referenceScore(after.answers), null);
+    assert.equal(dialogueReducer(after, { type: "nonresponse", questionId: "leisure", value }), after);
+  }
 });
 
 test("notes mode permits a participant-selected plan without the legacy context review step", () => {

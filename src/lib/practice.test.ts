@@ -3,6 +3,7 @@ import test from "node:test";
 import { buildSummary, responseLabel, weeklyMinutes } from "./practice.ts";
 import { createSession, dialogueReducer, referenceScore } from "./dialogue.ts";
 import type { DialogueSession } from "./dialogue.ts";
+import { workflowCopy } from "./workflow-copy.ts";
 
 const activeButSitting = { leisure: "leisure_151_plus", transport: "transport_151_plus", sedentary: "sedentary_8_plus" } as const;
 
@@ -35,7 +36,7 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.1-prototype \/ Web v1.6.1-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.2-prototype \/ Web v1.7.0-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
@@ -90,12 +91,42 @@ test("changed context exports the retained plan with a review label until explic
     const summary = buildSummary(session, language, "2026-10-23");
     assert.ok(summary.includes("会議が多い日もある"));
     assert.ok(summary.includes("参加者が選んだ小さな一歩"));
-    assert.match(summary, language === "ja" ? /背景のメモ変更後、次の一歩は再確認待ちです。/ : /The next step is awaiting review after context notes changed\./);
+    assert.ok(summary.includes(workflowCopy[language].planReviewPending));
     assert.match(summary, /60\/100/);
     const acknowledged = dialogueReducer(session, { type: "acknowledgePlanReview" });
     const reviewedSummary = buildSummary(acknowledged, language, "2026-10-23");
     assert.ok(reviewedSummary.includes("参加者が選んだ小さな一歩"));
     assert.doesNotMatch(reviewedSummary, /再確認待ち|awaiting review/);
+  }
+});
+
+test("corrected responses export retained notes with a review marker and the current score or missing-response status", () => {
+  let session: DialogueSession = { ...createSession(), answers: activeButSitting };
+  session = dialogueReducer(session, { type: "contextMode", mode: "notes" });
+  session = dialogueReducer(session, { type: "contextField", field: "sitting", value: "A context note to retain" });
+  session = dialogueReducer(session, { type: "planChoice", choice: "maintain" });
+  session = dialogueReducer(session, { type: "planField", field: "action", value: "A plan to retain" });
+  const corrected = dialogueReducer(session, { type: "answer", questionId: "leisure", optionId: "leisure_31_90" });
+  const unsure = dialogueReducer(corrected, { type: "nonresponse", questionId: "sedentary", value: "unsure" });
+  for (const language of ["ja", "en"] as const) {
+    const w = workflowCopy[language];
+    for (const state of [corrected, unsure]) {
+      const summary = buildSummary(state, language, "2026-10-30");
+      assert.ok(summary.includes("A context note to retain"));
+      assert.ok(summary.includes("A plan to retain"));
+      assert.ok(summary.includes(w.planChoices.maintain));
+      assert.ok(summary.includes(w.planReviewPending));
+      assert.ok(summary.includes(responseLabel(state.answers, "leisure", language, state.nonresponses)));
+    }
+    assert.match(buildSummary(corrected, language, "2026-10-30"), /40\/100/);
+    const incompleteSummary = buildSummary(unsure, language, "2026-10-30");
+    assert.doesNotMatch(incompleteSummary, /\d+\/100/);
+    assert.ok(incompleteSummary.includes(w.scoreUnavailable));
+    assert.ok(incompleteSummary.includes(w.nonresponses.unsure));
+    const acknowledged = dialogueReducer(unsure, { type: "acknowledgePlanReview" });
+    const reviewedSummary = buildSummary(acknowledged, language, "2026-10-30");
+    assert.ok(reviewedSummary.includes("A plan to retain"));
+    assert.ok(!reviewedSummary.includes(w.planReviewPending));
   }
 });
 

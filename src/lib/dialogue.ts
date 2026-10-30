@@ -44,14 +44,20 @@ export type DialogueAction =
   | { type: "planDomain"; domain: ActionPlan["domain"] }
   | { type: "planField"; field: "action" | "when" | "support" | "review"; value: string }
   | { type: "insertShortBout"; value: string }
+  | { type: "startShortBout"; value: string }
   | { type: "reset" }
   | { type: "example" };
 
-function invalidateFollowingSteps(session: DialogueSession): DialogueSession {
-  return { ...session, context: { ...emptyContext }, contextReviewed: false, planNeedsReview: false, plan: { ...emptyPlan } };
+function reviewFollowingSteps(session: DialogueSession): DialogueSession {
+  return {
+    ...session,
+    contextReviewed: false,
+    planNeedsReview: session.planNeedsReview || Object.values(session.plan).some(value => Boolean(value.trim()))
+  };
 }
 
-// A changed upstream response must not retain an apparently agreed downstream plan.
+// Keep written notes after a correction, but do not present the old plan as
+// already reviewed against the new response.
 export function dialogueReducer(session: DialogueSession, action: DialogueAction): DialogueSession {
   switch (action.type) {
     case "reset": return createSession();
@@ -64,7 +70,7 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
       if (session.answers[action.questionId] === action.optionId) return session;
       const nonresponses = { ...session.nonresponses };
       delete nonresponses[action.questionId];
-      return invalidateFollowingSteps({ ...session, answers: { ...session.answers, [action.questionId]: action.optionId }, nonresponses });
+      return reviewFollowingSteps({ ...session, answers: { ...session.answers, [action.questionId]: action.optionId }, nonresponses });
     }
     case "nonresponse": {
       if (!session.answers[action.questionId] && (session.nonresponses[action.questionId] ?? "") === action.value) return session;
@@ -73,7 +79,7 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
       delete answers[action.questionId];
       if (action.value) nonresponses[action.questionId] = action.value;
       else delete nonresponses[action.questionId];
-      return invalidateFollowingSteps({ ...session, answers, nonresponses });
+      return reviewFollowingSteps({ ...session, answers, nonresponses });
     }
     case "contextMode":
       if (session.context.mode === action.mode) return session;
@@ -104,6 +110,16 @@ export function dialogueReducer(session: DialogueSession, action: DialogueAction
       // click must never overwrite the participant's action or select a plan.
       if (session.context.mode !== "notes" || session.plan.choice !== "change" || session.plan.action.trim() || !action.value.trim()) return session;
       return { ...session, plan: { ...session.plan, action: action.value } };
+    case "startShortBout":
+      // The example button is an explicit choice to start a change draft.
+      // Recheck here so stale clicks cannot replace existing text or a choice
+      // to maintain habits / make no new change.
+      if (!["", "change"].includes(session.plan.choice) || session.plan.action.trim() || !action.value.trim()) return session;
+      return {
+        ...session,
+        context: { ...session.context, mode: "notes" },
+        plan: { ...session.plan, choice: "change", action: action.value }
+      };
   }
 }
 

@@ -60,3 +60,10 @@ See [the Web 1.4.0 design record](design-1.4.0.md) for the new interaction chang
 - Fixed production commit: `1276f8f7517e3110a392d1bcfe92a7331f246131`.
 - Preservation branch: `archive/web-v1.5.0-dialogue-rc.1-20261023`.
 - Web 1.5.1 adds a direct entry to next-step note fields. Quick scoring and Dialogue 1.1-prototype remain unchanged.
+
+## Web 1.6.1 preserved before five usability improvements
+
+- Previous production source: `79c6d2af7001b693ce130064361040592255fb42`.
+- Preservation branch: `archive/web-v1.6.1-before-usability-20261030`.
+- Web 1.7.0 / Dialogue 1.2 improves solo-use wording, direct plan entry, plain-language headings, visible category-gap guidance and preservation of notes after answer corrections. Quick v1.0 scoring, options and source questions remain unchanged.
+- The author requested all five changes on 2026-10-30. See [design and scope](design-1.7.0.md). Source preservation is distinct from deployment verification.
