@@ -52,11 +52,10 @@ type AppCopy = {
   domainLabels: Record<QuestionId, string>;
   scoreBands: Record<ScoreBand, string>;
   interpretations: Record<ScoreBand, string>;
-  importantStatement: string;
   privacyStatement: string;
   about: {
-    title: string;
-    body: string;
+    paragraphs: string[];
+    byline: string;
   };
   howTo: {
     title: string;
@@ -83,13 +82,13 @@ export const copy: Record<Language, AppCopy> = {
       home: "ホーム",
       assessment: "生活行動",
       results: "まとめ",
-      about: "概要",
+      about: "WPTIに込めた思い",
       howTo: "使い方",
       citation: "参考文献",
       policy: "利用上の注意"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.9.2-dialogue-rc.1",
       start: "生活行動から話し始める",
       restart: "入力をすべて消す",
       print: "印刷 / PDF保存",
@@ -98,7 +97,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "100点満点"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.9.2-dialogue-rc.1",
       title: "運動と座る時間を振り返りましょう。",
       body: "余暇・移動における身体活動と座位時間を、3つの質問で確認します。一人で、または理学療法士などの支援者と一緒に生活を振り返り、取り組みやすい行動を選ぶためのツールです。"
     },
@@ -142,13 +141,15 @@ export const copy: Record<Language, AppCopy> = {
       middle: "改善余地のある行動が特定しやすい段階",
       high: "維持や生活環境変化への備えを話題にしやすい段階"
     },
-    importantStatement:
-      "Quickは原著とは別の簡易採点です。点数だけで支援の必要性や介入効果を判断せず、行動の内訳・体調・生活環境と一緒に確認してください。",
     privacyStatement:
       "回答・背景・計画はこの画面のメモリ内だけで扱い、自動送信・自動保存しません。氏名など個人を特定できる情報は入力しないでください。",
     about: {
-      title: "概要",
-      body: "原著WPTIは、理学療法での行動評価・相談を目指した3領域指標の開発と初期評価の段階にあります。Quickは同じ3領域を別のカテゴリ式採点で扱い、成人の生活行動について対話するための簡易版です。このWeb版はQuick v1.0の質問・選択肢・配点と既存の想起期間を保ち、生活背景の確認と本人による選択を、別の対話支援として提供します。"
+      paragraphs: [
+        "私が目指しているのは、豊かに暮らすことが健康につながる社会です。",
+        "行きたい場所がある。会いたい人がいる。好きなことを続けたい。観光学と理学療法を学ぶなかで、私は、人が体を動かす理由は、その人が楽しみにしていることや、大切にしている日常のなかにあると考えるようになりました。",
+        "その視点から、余暇・移動・座る時間を一緒に捉える指標「WPTI」を開発しました。WPTI-Quickは、その考え方を日々の暮らしに生かすためのツールです。診療の場でも、地域でも、職場でも、「これからどんなふうに過ごしたいか」を話すきっかけになればと願っています。"
+      ],
+      byline: "開発者　喜瀬 真雄"
     },
     howTo: {
       title: "使い方",
@@ -213,13 +214,13 @@ export const copy: Record<Language, AppCopy> = {
       home: "Home",
       assessment: "Daily behavior",
       results: "Summary",
-      about: "About",
+      about: "Why I developed the WPTI",
       howTo: "How to use",
       citation: "Citation",
       policy: "Policy"
     },
     common: {
-      appTitle: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
+      appTitle: "WPTI-Quick Web v1.9.2-dialogue-rc.1",
       start: "Start with daily behavior",
       restart: "Clear all inputs",
       print: "Print / Save as PDF",
@@ -228,7 +229,7 @@ export const copy: Record<Language, AppCopy> = {
       outOf100: "out of 100"
     },
     home: {
-      eyebrow: "WPTI-Quick Web v1.9.1-dialogue-rc.1",
+      eyebrow: "WPTI-Quick Web v1.9.2-dialogue-rc.1",
       title: "Move, travel, sit. Reflect on daily life. Choose a next step.",
       body: "Explore leisure and transport activity and sedentary time with three questions. Use the results on your own or with a physiotherapist or another support person to reflect on daily life and choose a manageable next step."
     },
@@ -272,13 +273,15 @@ export const copy: Record<Language, AppCopy> = {
       middle: "A stage where modifiable behaviors can be identified more concretely.",
       high: "A stage where discussion can focus on maintenance and preparation for changes in life context."
     },
-    importantStatement:
-      "Quick uses a simplified scoring method separate from the original WPTI. Review the behavior profile, health, and life circumstances together; the score alone does not determine support needs or intervention benefit.",
     privacyStatement:
       "Responses, context, and plans stay in this page’s memory without automatic transmission or saving. Do not enter personal identifiers.",
     about: {
-      title: "About",
-      body: "The original WPTI is at the stage of development and initial evaluation as a three-domain index for physiotherapy assessment and counselling. Quick is a simplified version with separate categorical scoring across the same domains, intended for conversations about movement behavior in adults. This web version preserves Quick v1.0 questions, options, and points and provides a separate dialogue process for life circumstances and participant-selected next steps."
+      paragraphs: [
+        "I want to see a society where living a fulfilling life contributes to health.",
+        "A place you want to go. Someone you want to see. Something you love and want to keep doing. Studying tourism and physiotherapy led me to see how our reasons for moving grow out of what we look forward to and value in everyday life.",
+        "With that in mind, I developed the WPTI to bring together activity in our free time, walking or cycling to get around, and time spent sitting. WPTI-Quick brings this idea into daily life. In a clinic, in the community, or at work, I hope it helps start a conversation about how you would like to spend your days."
+      ],
+      byline: "Developed by Shinyu Kise"
     },
     howTo: {
       title: "How to use",

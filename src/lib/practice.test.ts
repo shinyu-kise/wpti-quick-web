@@ -36,11 +36,11 @@ test("60-point export puts original responses before context, plan and reference
     const sitting = responseLabel(activeButSitting, "sedentary", language);
     assert.ok(summary.includes(sitting));
     assert.ok(summary.indexOf(sitting) < summary.indexOf("60/100"));
-    assert.match(summary, /Quick v1.0 \/ Dialogue v1.5-prototype \/ Web v1.9.1-dialogue-rc.1/);
+    assert.match(summary, /Quick v1.0 \/ Dialogue v1.5-prototype \/ Web v1.9.2-dialogue-rc.1/);
     assert.match(summary, /41606948/);
     assert.match(summary, language === "ja" ? /過去1週間の平均的な状況/ : /average situation during the past 1 week/);
     assert.match(summary, language === "ja" ? /架空の回答/ : /fictional responses/);
-    assert.match(summary, language === "ja" ? /原著WPTIとは別のものです/ : /not equivalent to the original WPTI/);
+    assert.match(summary, language === "ja" ? /採点方法は原著WPTIと異なります/ : /scoring method differs from the original WPTI/);
     assert.doesNotMatch(summary, /35–59|60点以上|60 points or higher/);
   }
 });
@@ -280,10 +280,10 @@ test("all-maximum export shows three full item scores without inventing a low do
     assert.match(summary, /100\/100/);
     assert.deepEqual(lines.filter(line => /^(見直す候補：|Area to reflect on: )/.test(line)), []);
     if (language === "ja") {
-      for (const expected of ["余暇・運動での身体活動: 30/30点", "歩きや自転車での移動: 30/30点", "座る・横になる時間: 40/40点", "3つとも、この採点では満点です。", "点数だけで、健康上の不足は判断できません。"]) assert.ok(lines.includes(expected));
+      for (const expected of ["余暇・運動での身体活動: 30/30点", "歩きや自転車での移動: 30/30点", "座る・横になる時間: 40/40点", "3つとも、この採点では満点です。", "点数は、この1週間の「動く・座る」を振り返る目安です。"]) assert.ok(lines.includes(expected));
       assert.doesNotMatch(summary, /不足なし|健康です/);
     } else {
-      for (const expected of ["Leisure and exercise physical activity: 30/30 pts", "Walking or cycling for travel: 30/30 pts", "Sitting or lying down: 40/40 pts", "All three responses receive the maximum points in this scoring system.", "Scores alone cannot establish a health-related deficiency."]) assert.ok(lines.includes(expected));
+      for (const expected of ["Leisure and exercise physical activity: 30/30 pts", "Walking or cycling for travel: 30/30 pts", "Sitting or lying down: 40/40 pts", "All three responses receive the maximum points in this scoring system.", "The scores are a guide to reflecting on when you moved and when you sat this past week."]) assert.ok(lines.includes(expected));
       assert.doesNotMatch(summary, /You are healthy|No health deficiencies/);
     }
   }

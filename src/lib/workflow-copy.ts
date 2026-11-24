@@ -3,7 +3,7 @@ import type { Language, QuestionId } from "./types.ts";
 
 type WorkflowCopy = {
   steps: string[]; sample: string; example: string; version: string;
-  boundary: string; evidenceTitle: string; evidence: string[];
+  boundary: string; reflection: string; evidenceTitle: string; evidence: string[];
   hints: Record<QuestionId, string>; intervalTitle: string; intervalNote: string;
   calcTitle: string; days: string; minutes: string; total: string; calcNote: string; invalid: string;
   profileTitle: string; profileNote: string; prompts: Record<QuestionId, string>;
@@ -22,15 +22,13 @@ type WorkflowCopy = {
 export const workflowCopy: Record<Language, WorkflowCopy> = {
   ja: {
     steps: ["3問に答える", "暮らしについて話す", "やってみたいことを選ぶ"],
-    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.5-prototype ／ Web：1.9.1-dialogue-rc.1",
-    boundary: "3つの回答を、暮らしを振り返るきっかけに使います。点数は参考です。健康の良し悪しや病気の診断、WHOの運動基準を満たすかどうか、支援が必要な順番を示すものではありません。",
-    evidenceTitle: "原著WPTIとQuickの違い・研究上の限界",
+    sample: "入力例で試す", example: "入力例です。架空の回答を使っています。", version: "採点：Quick v1.0 ／ 対話支援：1.5-prototype ／ Web：1.9.2-dialogue-rc.1",
+    boundary: "点数は、この1週間の「動く・座る」を振り返る目安です。",
+    reflection: "いつもの暮らしを思い浮かべて、これからも続けたいこと、またできたらうれしいことはありますか？",
+    evidenceTitle: "原著WPTIとQuickの採点",
     evidence: [
-      "原著WPTIは、理学療法での行動評価・相談を目指し、余暇活動・移動活動・座位時間をまとめる3領域指標を開発し、初期評価した研究です。日本の成人全国調査で2,966人の得点を算出したと報告しています。全国の参照尺度として使えることや、得点に基づく臨床判断の実用準備が完了したことを示すものではありません。",
-      "Quick v1.0は、同じ3領域をカテゴリ化して30・30・40点を配点する別の簡易版です。原著WPTIと同じ算式ではなく、原著の性能値や35点・60点の提案帯をQuickの判定基準として適用できません。この画面では判定帯を表示しません。",
-      "原著はスクリーニングなどへの応用を提案していますが、得点によるスクリーニング、運動量や追跡頻度の決定は、検証済みの用途ではありません。この対話支援の使いやすさや有用性も、今後の検証課題です。",
-      "原著の活動基準との関連は、得点と一部の自己申告入力を共有する標本内の結果です。独立した健康・機能・予後の妥当性を示すものではありません。計算の再現性と測定の信頼性は別であり、再検査信頼性・変化への反応性・意味のある変化量は確立していません。",
-      "アプリの改良や区分の細分化によって、過去の研究の計算・数値の問題を遡って修正することはできません。原著の数値の検証と、Quickおよび対話支援の検証は分けて扱います。点数の増減だけで介入効果や健康の改善を判断できません。"
+      "Quickは原著WPTIの3つの領域を受け継ぎ、回答を区分して採点します。配点は余暇の活動30点、移動30点、座る時間40点です。",
+      "原著の判定区分や研究結果はQuickの点数には適用しません。"
     ],
     hints: {
       leisure: "例：仕事の後や休日の速歩き、ダンス、ジョギング、スポーツなど。少し息が弾む程度以上の活動を数えます。通勤や買い物のための歩き・自転車は、2問目に入れてください。",
@@ -56,24 +54,22 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     choose: "何について？（任意）", otherDomain: "その他・いくつかに関係すること", noPlan: "選択とメモを取り消す", action: "気づいたこと・やってみたいこと", when: "いつ・どこで・どのくらい？（任意）", support: "手伝ってほしいこと・難しいときの工夫（任意）", review: "後で振り返る日（任意）",
     personalized: "体調に合わせて、無理なくできることを選んでください。この画面では、必要な運動量や支援の順番は決めません。",
     reviewNote: "後で、できたことや難しかったことを振り返りましょう。暮らしが変わっても、点数が変わらない場合があります。",
-    privacy: "名前や連絡先など、個人が特定できる内容は書かないでください。入力は送信・自動保存されません。ページを読み込み直すか、入力を消してやり直すと消えます。",
-    consent: "一人でも、理学療法士などの支援者と一緒でも使えます。誰かと使う場合は、使い方と記録してよい範囲を本人と確認してください。健康教室等での収集・研究利用は、この画面とは別に、必要な同意や倫理承認の範囲を確認します。",
+    privacy: "氏名や連絡先は入力しないでください。入力は送信・自動保存されず、再読み込みやリセットで消えます。",
+    consent: "誰かと使うときは、何を記録してよいか本人と確認してください。研究や健康教室で回答を集めるときは、必要な同意と倫理承認の範囲を別途確認してください。",
     showSummary: "回答とメモを見る", copy: "まとめをコピー", copied: "コピーしました。貼り付ける場所を確認してください。", copyFailed: "コピーできませんでした。印刷 / PDF保存をご利用ください。", edit: "回答を直す", editPlan: "選んだ行動を見直す",
-    referenceTitle: "合計点を見る（参考）", referenceNote: "Quick v1.0の決まりで計算した参考点です。原著WPTIとは別のものです。健康度の割合や、診断の基準ではありません。1点の差が測定できることを示さず、健康状態の判定や、支援の優先順位を決めるものではありません。",
+    referenceTitle: "合計点を見る（参考）", referenceNote: "Quickの合計点は、3つの回答に応じた配点を足したものです。採点方法は原著WPTIと異なります。",
     scoreUnavailable: "3問すべての時間が選ばれていないため、合計点は出しません。", planReviewPending: "回答や暮らしのメモを変更しました。今の内容に合っているか、メモを確認してください。", notRecorded: "暮らしや行動のメモなし", notEntered: "未記入", summaryTitle: "回答とメモ", summaryIntro: "回答とメモの内容を確認してください。誰かと使う場合は一緒に確認します。メモは点数に影響しません。", exportNote: "コピーや印刷は、ボタンを押したときだけ行います。保存先や共有する相手を確認してください。誰かの回答を保存・共有する場合は、本人の了解を得てください。コピーした内容や保存したファイルは、画面の入力を消しても残ります。",
     original: "原著をPubMedで読む"
   },
   en: {
     steps: ["Three areas of daily behavior", "Discuss life circumstances", "Choose a next step"],
-    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.5-prototype / Web: 1.9.1-dialogue-rc.1",
-    boundary: "Use the responses and life circumstances as conversation prompts. The Quick score is a reference only, not a percentage of health, a diagnosis, WHO guideline attainment, or a priority for support.",
-    evidenceTitle: "Original WPTI vs Quick: research limitations",
+    sample: "Try an example", example: "Example only. These are fictional responses.", version: "Scoring: Quick v1.0 / Dialogue: 1.5-prototype / Web: 1.9.2-dialogue-rc.1",
+    boundary: "The scores are a guide to reflecting on when you moved and when you sat this past week.",
+    reflection: "Thinking about your daily life, what would you like to keep doing, or be able to enjoy again?",
+    evidenceTitle: "How the original WPTI and Quick are scored",
     evidence: [
-      "The original study developed and initially evaluated a three-domain index of leisure activity, transport activity, and sedentary time for physiotherapy assessment and counselling. It reports scores for 2,966 adults from a national survey in Japan. This does not establish a national reference scale or readiness for routine score-based use.",
-      "Quick v1.0 is a separate simplified version with categorical scoring and 30, 30, and 40 available points. Its formula is not the original WPTI formula. The original performance estimates and proposed bands at 35 and 60 cannot be applied as Quick decision rules. This interface does not display those bands.",
-      "The paper proposes applications including screening, but score-based screening, exercise-dose allocation, and follow-up decisions are not established uses. The usability and benefit of this dialogue support also remain to be evaluated.",
-      "The original associations with activity criteria are within-sample results that share some self-reported inputs with the score. They do not establish independent validity for health, function, or prognosis. Computational reproducibility differs from measurement reliability; test–retest reliability, responsiveness, and meaningful change have not been established.",
-      "App improvements or finer categories cannot retrospectively correct calculation or numerical problems in past research. Verification of the original study, Quick, and dialogue support must be kept separate. Score changes alone do not establish intervention effectiveness or improved health."
+      "Quick uses the same three areas as the original WPTI and assigns points by response category: up to 30 for leisure activity, 30 for travel, and 40 for sitting time.",
+      "The original study’s proposed score bands and performance estimates do not apply to Quick scores."
     ],
     hints: {
       leisure: "Examples: brisk walking, dancing, jogging, or sport after work or on days off, involving at least light breathlessness. Do not count inactive leisure. Count walking or cycling for travel in Q2; do not count the same time twice.",
@@ -93,7 +89,7 @@ export const workflowCopy: Record<Language, WorkflowCopy> = {
     planTitle: "Notes", planIntro: "Choose what fits your health and daily life. You can keep your current habits or decide later.", planChoices: { change: "Choose something to try", maintain: "Keep my current habits", none: "Decide later" },
     choose: "What is it about? (optional)", otherDomain: "Other / more than one area", noPlan: "Clear this choice and its notes", action: "What you noticed or would like to do", when: "When / where / how much? (optional)", support: "Help or an alternative if difficult (optional)", review: "A date to look back (optional)",
     personalized: "Check the plan against health and mobility. This screen does not prescribe an exercise dose or rank support needs.", reviewNote: "Next time, discuss what happened, what was manageable, and what got in the way. Behavior and circumstances can change within the same category or score.",
-    privacy: "Do not enter names, contact details, or other personal identifiers. Inputs remain in this page’s memory; they are not automatically sent or saved. Reloading or ‘Clear all inputs’ erases them.", consent: "Use this on your own or with a physiotherapist or another support person. If using it with someone else, agree how to use it and what may be recorded. Collection or research use in a health class requires a separate check of consent and any applicable ethics approval.", showSummary: "Review the conversation summary", copy: "Copy summary", copied: "Copied. The clipboard retains the content; check where you share it.", copyFailed: "Copy failed. Please use Print / Save as PDF.", edit: "Review responses", editPlan: "Review next step",
-    referenceTitle: "Reference only: view the Quick v1.0 total", referenceNote: "Calculated with the unchanged categorical scoring. It is not equivalent to the original WPTI. It does not represent a health percentage, a clinical threshold, or measurement precision of one point. No clinical decision bands or support priorities are assigned.", scoreUnavailable: "Some instrument responses are missing, so no total is calculated. The conversation can continue without a score.", planReviewPending: "Responses or context notes have changed. The retained next step is awaiting review.", notRecorded: "No context or plan details recorded", notEntered: "Not entered", summaryTitle: "Conversation summary", summaryIntro: "Check the responses, life circumstances, and choices, together if using this with someone else. Keep scoring separate from notes.", exportNote: "Copying, printing, or saving as PDF happens only when you choose it. Check the destination and sharing. Get the person’s agreement before handling their record. ‘Clear all inputs’ does not erase clipboard content or saved files.", original: "Read the original paper on PubMed"
+    privacy: "Leave out names and contact details. Entries are not sent or saved automatically. Reloading or resetting clears them.", consent: "When using Quick with someone else, agree what you may record. Before collecting responses in a health class or study, check the consent needed and the scope of any ethics approval.", showSummary: "Review the conversation summary", copy: "Copy summary", copied: "Copied. The clipboard retains the content; check where you share it.", copyFailed: "Copy failed. Please use Print / Save as PDF.", edit: "Review responses", editPlan: "Review next step",
+    referenceTitle: "Reference only: view the Quick v1.0 total", referenceNote: "The Quick total adds the points for your three responses. Its scoring method differs from the original WPTI.", scoreUnavailable: "Some instrument responses are missing, so no total is calculated. The conversation can continue without a score.", planReviewPending: "Responses or context notes have changed. The retained next step is awaiting review.", notRecorded: "No context or plan details recorded", notEntered: "Not entered", summaryTitle: "Conversation summary", summaryIntro: "Check the responses, life circumstances, and choices, together if using this with someone else. Keep scoring separate from notes.", exportNote: "Copying, printing, or saving as PDF happens only when you choose it. Check the destination and sharing. Get the person’s agreement before handling their record. ‘Clear all inputs’ does not erase clipboard content or saved files.", original: "Read the original paper on PubMed"
   }
 };
