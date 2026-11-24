@@ -10,7 +10,6 @@ export const domainFeedbackCopy = {
     incomplete: "選ばれた時間だけでは、3つを比べられません。",
     choose: "できそうな項目から考えてみましょう。",
     comparison: "それぞれの満点に対する点数で比べています。",
-    limitation: "点数だけで、健康上の不足は判断できません。",
     method: "満点は、余暇・運動での身体活動30点・移動30点・座る時間40点です。それぞれの満点に対する点数を比べ、最も低い項目を「見直す候補」としています。同じ場合はすべて示します。3つとも満点の場合は、候補を示しません。余暇・運動や移動で体を動かす時間は長いほど、座る時間は短いほど点数が高くなります。",
     missing: "「わからない」「答えない」や未回答は、0点ではありません。回答できる範囲で大丈夫です。",
     hints: {
@@ -27,7 +26,6 @@ export const domainFeedbackCopy = {
     incomplete: "The selected times are not enough to compare all three areas.",
     choose: "Start with whichever feels manageable for you.",
     comparison: "Each score is compared with its own maximum.",
-    limitation: "Scores alone cannot establish a health-related deficiency.",
     method: "The maxima are 30 points for leisure, 30 for travel and 40 for sitting. Each score is compared with its own maximum; the lowest proportion identifies an area to reflect on. All ties are shown, except that no candidate is shown when all three items receive maximum points. Longer activity or travel time and shorter sitting time receive higher points.",
     missing: "Unsure, declined and unanswered items are not zero points. Answer only what you can.",
     hints: {

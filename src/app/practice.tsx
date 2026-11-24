@@ -53,6 +53,8 @@ export function BehaviorProfile({ language, session, compact = true, children }:
   const t = copy[language], w = workflowCopy[language], c = domainFeedbackCopy[language];
   const feedback = getDomainFeedback(session.answers);
   return <section className="domain-section behavior-profile scored-profile" aria-labelledby="profile-title">
+    <p>{w.boundary}</p>
+    <p className="feedback-headline">{w.reflection}</p>
     <div className={`domain-feedback-message feedback-${feedback.status}`}>
       <p className="feedback-headline">{domainFeedbackMessage(feedback, language)}</p>
       {!children && feedback.status === "comparable" && <p className="no-print">{feedback.focusIds.length === 1 ? c.hints[feedback.focusIds[0]] : c.choose}</p>}
@@ -76,7 +78,7 @@ export function BehaviorProfile({ language, session, compact = true, children }:
         </article>;
       })}
     </div>
-    <p className="domain-score-note">{feedback.status !== "incomplete" && <>{c.comparison}<br /></>}{c.limitation}</p>
+    {feedback.status !== "incomplete" && <p className="domain-score-note">{c.comparison}</p>}
     <p className="print-only">{c.method}</p>
     {compact && <details className="editor-details profile-guide no-print">
       <summary>{language === "ja" ? "点数と回答の見方" : "About the scores and responses"}</summary>

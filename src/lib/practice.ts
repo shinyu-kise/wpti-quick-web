@@ -9,7 +9,7 @@ import { domainFeedbackCopy, domainFeedbackMessage } from "./domain-feedback-cop
 
 export { emptyPlan } from "./dialogue.ts";
 export type { ActionPlan } from "./dialogue.ts";
-export const WEB_VERSION = "1.9.1-dialogue-rc.1";
+export const WEB_VERSION = "1.9.2-dialogue-rc.1";
 export const INSTRUMENT_VERSION = "1.0";
 export const DIALOGUE_VERSION = "1.5-prototype";
 export const PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/41606948/";
@@ -64,7 +64,8 @@ export function buildSummary(session: DialogueSession, language: Language, date:
     ...QUESTION_ORDER.map(id => `${feedbackCopy.names[id]}: ${feedback.domains[id].points === null ? feedbackCopy.noScore : `${feedback.domains[id].points}/${feedback.domains[id].max}${language === "ja" ? "点" : " pts"}`}`),
     domainFeedbackMessage(feedback, language),
     feedbackCopy.method,
-    feedbackCopy.limitation,
+    w.boundary,
+    w.reflection,
     "",
     w.contextTitle,
     ...(notes && contextLines.length ? contextLines : [w.notRecorded]),
@@ -75,7 +76,6 @@ export function buildSummary(session: DialogueSession, language: Language, date:
     "",
     result ? `${language === "ja" ? "参考点（Quick v1.0）" : "Reference total (Quick v1.0)"}: ${result.total}/100` : w.scoreUnavailable,
     w.referenceNote,
-    w.boundary,
     w.reviewNote,
     "",
     t.citation.text,

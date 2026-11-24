@@ -115,17 +115,22 @@ export default function Home() {
           <div className="hero-art no-print" aria-hidden="true"><img src="/wellness-path.jpg" alt="" width="1122" height="1402" fetchPriority="high" /></div>
         </div>
         <div className="home-journey"><ol className="home-steps" role="list">{u.phases.map((label, index) => <li key={label}>{index > 0 && <span aria-hidden="true">→</span>}<strong>{label}</strong></li>)}</ol></div>
+        <div><button type="button" className="text-button" onClick={() => navigate("about")}>{t.nav.about}</button></div>
       </section>}
 
       {view === "assessment" && <Assessment key={resetKey} language={language} session={session} hasDownstream={hasDownstream} selectAnswer={selectAnswer} selectNonresponse={selectNonresponse} showSummary={showSummary} goHome={() => navigate("home")} />}
 
       {view === "results" && <SummaryView language={language} session={session} dispatch={updateDialogue} date={formatDate(summaryDate, language)} editAnswers={() => navigate("assessment")} goHome={() => navigate("home")} />}
-      {view === "about" && <InfoPanel title={t.about.title}><p>{t.about.body}</p><div className="notice">{t.importantStatement}</div><Evidence language={language} /></InfoPanel>}
+      {view === "about" && <InfoPanel title={t.nav.about}>
+        {t.about.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+        <p>{t.about.byline}　｜　<a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original}</a></p>
+        <div><button type="button" className="text-button" onClick={() => navigate("home")}>{u.home}</button></div>
+      </InfoPanel>}
       {view === "howTo" && <InfoPanel title={t.howTo.title}><ul className="plain-list">{t.howTo.bullets.map(item => <li key={item}>{item}</li>)}</ul><div className="notice">{w.privacy}</div><p>{w.consent}</p></InfoPanel>}
       {view === "citation" && <InfoPanel title={t.citation.title}><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a><p>{w.version}</p></InfoPanel>}
       {view === "policy" && <InfoPanel title={t.policy.title}><ul className="plain-list">{t.policy.bullets.map(item => <li key={item}>{item}</li>)}</ul><div className="notice">{w.privacy}</div><p>{w.consent}</p></InfoPanel>}
     </main>
-    <footer className="footer no-print"><details><summary>{u.details}</summary><p>{w.version}</p><p>{w.boundary}</p><p>{w.privacy}</p><p>{w.consent}</p><Evidence language={language} /></details></footer>
+    <footer className="footer no-print"><details><summary>{u.details}</summary><Evidence language={language} /><p>{w.privacy}</p><p>{w.consent}</p><p>{w.version}</p></details></footer>
   </div>;
 }
 
@@ -176,7 +181,7 @@ function SummaryView({ language, session, dispatch, date, editAnswers, goHome }:
       <details className="reference-score"><summary>{w.referenceTitle}</summary>{result ? reference : <p>{w.scoreUnavailable}</p>}</details>
       <details className="export-controls"><summary>{ja ? "結果をコピー・印刷する" : "Copy or print your responses"}</summary><p className="hint">{u.export}</p><details className="export-details"><summary>{ja ? "保存するときの注意" : "Before saving"}</summary><p>{w.exportNote}</p></details><div className="result-actions"><button className="secondary-button" type="button" onClick={copySummary}>{w.copy}</button><button className="secondary-button" type="button" onClick={() => window.print()}>{t.common.print}</button></div><p role="status" aria-live="polite">{copyStatus}</p></details>
     </div>}
-    <div className="print-only"><ConversationDetails language={language} session={session} />{result ? <div className="reference-score"><h2>{w.referenceTitle}</h2>{reference}</div> : <p>{w.scoreUnavailable}</p>}<div className="statement">{w.boundary}</div><p>{w.version}</p><h2>{t.citation.title}</h2><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a></div>
+    <div className="print-only"><ConversationDetails language={language} session={session} />{result ? <div className="reference-score"><h2>{w.referenceTitle}</h2>{reference}</div> : <p>{w.scoreUnavailable}</p>}<p>{w.version}</p><h2>{t.citation.title}</h2><p>{t.citation.text}</p><a href={PAPER_URL} target="_blank" rel="noreferrer">{w.original} ↗</a></div>
   </section>;
 }
 

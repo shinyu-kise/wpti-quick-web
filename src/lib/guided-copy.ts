@@ -1,11 +1,11 @@
 export const guidedCopy = {
   ja: {
-    title: ["体を動かす時間と、", "座っている時間を", "振り返りましょう。"],
-    intro: "この1週間を振り返ると、結果と行動の例がすぐ見られます。",
+    title: ["この1週間、", "どんなときに動き、", "どんなときに座っていましたか？"],
+    intro: "自由な時間に体を動かしたこと、歩きや自転車で移動したこと、座って過ごした時間。3つの質問で、いつもの暮らしを振り返ります。",
     start: "3つの質問に答える", resume: "つづきから", example: "入力例を見る", menu: "メニュー",
     phases: ["3つの質問", "結果", "行動例"],
     privacy: "入力は送信・自動保存されません。再読み込みで消えます。",
-    details: "利用上の注意・採点仕様", question: "質問", next: "次へ", back: "戻る", home: "ホームへ",
+    details: "採点方法・研究利用について", question: "質問", next: "次へ", back: "戻る", home: "ホームへ",
     questionTitles: {
       leisure: "余暇・運動での身体活動",
       transport: "歩きや自転車で移動する時間",
@@ -21,12 +21,12 @@ export const guidedCopy = {
     restart: "入力を消してやり直す", returnFlow: "入力に戻る"
   },
   en: {
-    title: ["Time moving.", "Time sitting.", "Look back on your week."],
-    intro: "Look back on the past week to see your results and activity ideas straight away.",
+    title: ["This past week, ", "when were you moving ", "and when were you sitting?"],
+    intro: "Think about being active in your free time, walking or cycling to get somewhere, and the time you spent sitting. Three questions help you look back on everyday life.",
     start: "Answer three questions", resume: "Continue", example: "See an example", menu: "Menu",
     phases: ["3 questions", "Results", "Activity ideas"],
     privacy: "Inputs are not sent or saved automatically. Reloading clears them.",
-    details: "Use and scoring notes", question: "Question", next: "Next", back: "Back", home: "Home",
+    details: "Scoring and research use", question: "Question", next: "Next", back: "Back", home: "Home",
     questionTitles: {
       leisure: "Leisure and exercise physical activity",
       transport: "Time walking or cycling to get from place to place",
